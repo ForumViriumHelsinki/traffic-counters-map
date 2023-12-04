@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map of Traffic Counters</title>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="checkboxes" style="height: 30px;" class=".filter-checkboxes">
+        <label  for="ecocounter">EcoCounter </label>
+        <input class="filter-checkbox" type="checkbox" id="ecocounter">
+        <label  for="fintraffic">FinTraffic</label>
+        <input class="filter-checkbox" type="checkbox" id="fintraffic">
+        <label  for="hellam">HEL LAM</label>
+        <input class="filter-checkbox" type="checkbox" id="hel lam">
+        <label  for="infotripla">Info Tripla</label>
+        <input class="filter-checkbox" type="checkbox" id="infotripla">
+        <label  for="marksman">Marksman</label>
+        <input class="filter-checkbox" type="checkbox" id="marksman">
+    </div>
+    <!-- <div id="viz" style="height: 300px;" class="chart-container">
+        <p>chart container is here</p>
+    </div> -->
+
+    <!-- <div id="map" style="height: 800px;" class=".leaflet-container">
+
+    </div>
+    <div id="viz" style="height: 300px;" class="chart-container">
+        <p>chart container is here</p>
+    </div> -->
+
+
+
+    <div class="split left">
+        <div class="centered" id="map" style="height: 800px;" class=".leaflet-container">
+        </div>
+      </div>
+
+      <div class="split right">
+        <div class="centered" id="viz">
+            chart
+        </div>
+      </div>
+
+
+    <div id="overlay" class="overlay">
+        <div id="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+    <div id="data-viz-container"></div>
+    <script src="dist/bundle.js"></script>
+</body>
+</html>
