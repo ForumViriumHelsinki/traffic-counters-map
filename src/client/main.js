@@ -3,6 +3,8 @@
 // Import Leaflet and D3.js
 import * as L from 'leaflet';
 import * as d3 from 'd3';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const counter_url = '/api/counters';
 const latest_obs_url = '/api/observations-latest/';
@@ -16,6 +18,16 @@ let map
 
 // Get all elements with the class "filter-checkboxes"
 const checkboxes = document.querySelectorAll('.filter-checkbox');
+
+function showLoadingSpinner() {
+    const overlay = document.getElementById('overlay');
+    console.log("show loading spinner")
+    overlay.style.display = 'flex';
+}
+  function hideLoadingSpinner() {
+    const overlay = document.getElementById('overlay');
+    overlay.style.display = 'none';
+  }
 
 // Add a click event listener to each checkbox
 checkboxes.forEach(checkbox => {
@@ -54,14 +66,14 @@ checkboxes.forEach(checkbox => {
 });
 
 function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
-    console.log("update map after checkbox selection")
-    //console.log(geojsonData)
+    //console.log("update map after checkbox selection")
+    ////console.log(geojsonData)
     let source;
     geojsonData.features = geojsonData.features.map((item) => {
-        //console.log("print source")
-        console.log(item.properties.source.toLowerCase())
+        ////console.log("print source")
+        //console.log(item.properties.source.toLowerCase())
         source = item.properties.source.toLowerCase()
-        //console.log(source)
+        ////console.log(source)
         if (source.startsWith("harbor")) {
             source = "infotripla"
         }
@@ -78,25 +90,23 @@ function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
 
 }
 
-function bringUpMeasurementsOverlay(feature) {
-    console.log("in overlay")
-    console.log(feature)
-    let apiUrl = latest_obs_url + feature.properties.id
+function bringUpMeasurementsOverlay(feature, urlWithParams) {
 
-    const centerCoordinates = feature.geometry.coordinates; // Assuming center is an array like [latitude, longitude]
-    const svgWidth = 200; // Adjust the width of your SVG
-    const svgHeight = 200; // Adjust the height of your SVG
+
+    // const centerCoordinates = feature.geometry.coordinates; // Assuming center is an array like [latitude, longitude]
+    // const svgWidth = 200; // Adjust the width of your SVG
+    // const svgHeight = 200; // Adjust the height of your SVG
 
 
 
 
-    var svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svgElement.setAttribute('xmlns', "http://www.w3.org/2000/svg");
-    svgElement.setAttribute('viewBox', "0 0 200 200");
-    svgElement.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
-    var svgElementBounds = [[map.getBounds().getSouth(), map.getBounds().getWest()], [map.getBounds().getNorth(), map.getBounds().getEast()]];
-    console.log(svgElementBounds)
-    L.svgOverlay(svgElement, svgElementBounds).addTo(map);
+    // var svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // svgElement.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+    // svgElement.setAttribute('viewBox', "0 0 200 200");
+    // svgElement.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
+    // var svgElementBounds = [[map.getBounds().getSouth(), map.getBounds().getWest()], [map.getBounds().getNorth(), map.getBounds().getEast()]];
+    // //console.log(svgElementBounds)
+    // L.svgOverlay(svgElement, svgElementBounds).addTo(map);
 
 
 
@@ -105,6 +115,13 @@ function bringUpMeasurementsOverlay(feature) {
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
+    const svgSelection = d3.select('svg');
+
+        // Check if the SVG element exists
+        if (!svgSelection.empty()) {
+          // Remove the SVG element
+          svgSelection.remove();
+        }
     // append the svg object to the body of the page
     var svg = d3.select("#viz")
         .append("svg")
@@ -115,31 +132,43 @@ function bringUpMeasurementsOverlay(feature) {
             "translate(" + margin.left + "," + margin.top + ")");
 
     //Read the data
-    d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+    //d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+
+    showLoadingSpinner()
+    d3.csv(urlWithParams,
 
         // When reading the csv, I must format variables:
         function (d) {
-            return { date: d3.timeParse("%Y-%m-%d")(d.date), value: d.value }
-        },
+            //console.log("getting data")
+            //console.log(d)
+            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value }
+            //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
+        }).then(
+
 
         // Now I can use this dataset:
         function (data) {
 
+            hideLoadingSpinner()
+            //console.log("dataset parsed")
+            //console.log("x axis")
+            //console.log(data)
             // Add X axis --> it is a date format
             var x = d3.scaleTime()
-                .domain(d3.extent(data, function (d) { return d.date; }))
+                .domain(d3.extent(data, function (d) {
+                    return d.date; }))
                 .range([0, width]);
             svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(d3.axisBottom(x));
-
+            //console.log("y axis")
             // Add Y axis
             var y = d3.scaleLinear()
                 .domain([0, d3.max(data, function (d) { return +d.value; })])
                 .range([height, 0]);
             svg.append("g")
                 .call(d3.axisLeft(y));
-
+            //console.log("line")
             // Add the line
             svg.append("path")
                 .datum(data)
@@ -154,7 +183,7 @@ function bringUpMeasurementsOverlay(feature) {
         })
 
 
-    console.log("chart done")
+    //console.log("chart done")
 }
 
 
@@ -162,7 +191,7 @@ function loadGeojsonMap(geojsonData) {
 
     function onEachFeature(feature, layer) {
         // does this feature have a property named popupContent?
-        //console.log(feature.properties)
+        ////console.log(feature.properties)
         if (feature.properties) {
             const htmlStrings = Object.entries(feature.properties).map(([key, value]) => `
             <strong>${key}:</strong> ${value}<br/>
@@ -218,8 +247,8 @@ function loadGeojsonMap(geojsonData) {
                     event.preventDefault();
                     let startDate = startDateInput.value;
                     let endDate = endDateInput.value;
-                    console.log(startDate)
-                    console.log(endDate)
+                    //console.log(startDate)
+                    //console.log(endDate)
                     // Define your URL parameters as key-value pairs
                     let query_params = {
                         start_date: startDate,
@@ -233,12 +262,10 @@ function loadGeojsonMap(geojsonData) {
 
                     let apiUrl = latest_obs_url + feature.properties.id
                     let urlWithParams = `${apiUrl}?${queryString}`;
-                    console.log(urlWithParams)
-                    //const newTab = window.open(urlWithParams, '_blank'); // Replace with the URL of the destination webpage
-                    //newTab.focus(); // Optional: bring focus to the new tab
-                    console.log("call to bring up overlay")
-                    console.log(feature)
-                    bringUpMeasurementsOverlay(feature)
+                    //console.log(urlWithParams)
+                    ////console.log("call to bring up overlay")
+                    ////console.log(feature)
+                    bringUpMeasurementsOverlay(feature, urlWithParams)
                 });
 
             });
@@ -258,16 +285,19 @@ function createMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
+    showLoadingSpinner()
     fetch(counter_url)
         .then(response => response.json())
         .then(geojson => {
+            //setTimeout(1000)
+            hideLoadingSpinner()
             geojson.features = geojson.features.map((item) => {
                 item.properties.show_on_map = false
                 return item
             });
             geojsonData = geojson; // Store the initial geojson data
-            console.log("fetched counters data")
-            //console.log(geojsonData)
+            //console.log("fetched counters data")
+            ////console.log(geojsonData)
             loadGeojsonMap(geojsonData);
         })
         .catch(error => {

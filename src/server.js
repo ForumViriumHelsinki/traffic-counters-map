@@ -41,6 +41,7 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         const queryParams = { order: '-datetime', pagesize: 1, counter: req.params.id };
         queryParams["start-date"] = req.query.start_date
         queryParams["end-date"] = req.query.end_date
+        queryParams["format"] = "csv"
 
         const url = 'https://lidotiku.api.dev.hel.ninja/api/observations'
         // Convert the query parameters object into a URL-encoded string
@@ -48,7 +49,15 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         const urlWithQuery = `${url}?${queryString}`;
         console.log(urlWithQuery)
         const response = await axios.get(urlWithQuery);
-        res.json(response.data);
+        //console.log(response.text())
+        //res.json(response.data);
+
+          // Set headers for CSV download
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
+        res.send(response.data);
+
+
     } catch (error) {
         console.error('Error ::', error.message);
         res.status(500).json({ error: 'Failed to fetch data' });
