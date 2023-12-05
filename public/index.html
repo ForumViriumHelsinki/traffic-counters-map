@@ -7,6 +7,7 @@
     <title>Map of Traffic Counters</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -15,40 +16,32 @@
         <div id="loading-spinner"></div>
         <p>Loading...</p>
     </div>
+    <div class="row">
 
-    <div id="checkboxes" style="height: 30px;" class=".filter-checkboxes">
-        <label for="ecocounter">EcoCounter </label>
-        <input class="filter-checkbox" type="checkbox" id="ecocounter">
-        <label for="fintraffic">FinTraffic</label>
-        <input class="filter-checkbox" type="checkbox" id="fintraffic">
-        <label for="hellam">HEL LAM</label>
-        <input class="filter-checkbox" type="checkbox" id="hel lam">
-        <label for="infotripla">Info Tripla</label>
-        <input class="filter-checkbox" type="checkbox" id="infotripla">
-        <label for="marksman">Marksman</label>
-        <input class="filter-checkbox" type="checkbox" id="marksman">
-        <label for="liva">Liva</label>
-        <input class="filter-checkbox" type="checkbox" id="liva">
+            <div class="checkbox">
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="ecocounter">EcoCounter </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="fintraffic">FinTraffic </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="hel lam">HEL LAM </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="infotripla">Info Tripla </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="marksman">Marksman </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva">Liva </label>
+
+
+
+        </div>
     </div>
-    <!-- <div id="viz" style="height: 300px;" class="chart-container">
-        <p>chart container is here</p>
-    </div> -->
 
-    <!-- <div id="map" style="height: 800px;" class=".leaflet-container">
-
-    </div>
-    <div id="viz" style="height: 300px;" class="chart-container">
-        <p>chart container is here</p>
-    </div> -->
-
-
-
-    <div class="container">
-        <div id="map" class="lmap" style="height: 870px;"></div>
-        <div id="viz" class="visualization"></div>
+    <div class="row">
+        <div id="map" class="lmap col-md-6" style="height: 900px;"></div>
+        <div id="viz" class="visualization col-md-6"></div>
     </div>
 
     <script src="dist/bundle.js"></script>
+    <!-- Add Bootstrap JS and Popper.js scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>
