@@ -16,24 +16,82 @@
         <div id="loading-spinner"></div>
         <p>Loading...</p>
     </div>
+
+
     <div class="row">
 
-            <div class="checkbox">
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="ecocounter">EcoCounter </label>
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="fintraffic">FinTraffic </label>
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="hel lam">HEL LAM </label>
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="infotripla">Info Tripla </label>
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="marksman">Marksman </label>
-                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva">Liva </label>
+        <!-- Map on the Left -->
+        <div id="map" class="lmap col-md-6" style="height: 900px;"></div>
 
+        <!-- Container for Visualizations on the right -->
+        <div class="lmap col-md-6 d-flex flex-column" style="height: 800px;">
+        <div class="row mt-3 mx-3">
+            <div class="card">
+                <div class="card-body">
+                    <p>Filter counters by source</p>
+                <div class="checkbox ">
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="ecocounter">EcoCounter
+                    </label>
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="fintraffic">FinTraffic
+                    </label>
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="hel lam">HEL LAM </label>
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="infotripla">Info Tripla
+                    </label>
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="marksman">Marksman
+                    </label>
+                    <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva">Liva </label>
 
+                </div>
+                <p>Click on a counter marker to visualize the measurements</p>
+            </div>
+
+                </div>
+            </div>
+            <!-- Top Half of Right Split (2 columns) -->
+            <div class="d-flex flex-fill flex-row mt-3">
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="card hidden viz" >
+                        <div class="card-body">
+                            <p><b>Data from today</b></p>
+                            <div id="viz-day">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="card hidden viz">
+                        <div class="card-body">
+                            <p><b>Data from the past week</b></p>
+                            <div id="viz-week">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Half of Right Split (2 columns) -->
+            <div class="d-flex flex-fill flex-row mt-3">
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="card hidden viz">
+                        <div class="card-body">
+                            <p><b>Data from the past month</b></p>
+                            <div id="viz-month">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card hidden viz">
+                        <div class="card-body">
+                            <p><b>Data from the past year</b></p>
+                            <div id="viz-year">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
-    </div>
-
-    <div class="row">
-        <div id="map" class="lmap col-md-6" style="height: 900px;"></div>
-        <div id="viz" class="visualization col-md-6"></div>
     </div>
 
     <script src="dist/bundle.js"></script>

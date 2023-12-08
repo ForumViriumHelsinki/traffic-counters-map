@@ -4,6 +4,8 @@ const cors = require('cors'); // Import the CORS middleware
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
+const path = require('path');
+
 const webpackConfig = require('../webpack.config');
 
 const app = express();
@@ -39,15 +41,15 @@ app.get('/api/observations-latest/:id', async (req, res) => {
     try {
         // format: 'json'
         const queryParams = { order: '-datetime', pagesize: 1, counter: req.params.id };
-        queryParams["start-date"] = req.query.start_date
-        queryParams["end-date"] = req.query.end_date
+        // queryParams["start-date"] = req.query.start_date
+        // queryParams["end-date"] = req.query.end_date
         queryParams["format"] = "csv"
 
         const url = 'https://lidotiku.api.dev.hel.ninja/api/observations'
         // Convert the query parameters object into a URL-encoded string
         const queryString = new URLSearchParams(queryParams).toString();
         const urlWithQuery = `${url}?${queryString}`;
-        console.log(urlWithQuery)
+        console.log("urlWithQuery " + urlWithQuery)
         const response = await axios.get(urlWithQuery);
         //console.log(response.text())
         //res.json(response.data);

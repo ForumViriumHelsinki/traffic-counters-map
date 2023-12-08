@@ -16,8 +16,7 @@ let geojsonData; // Define the variable to store geojson data
 let geojsonLayer;
 let map
 
-// Get all elements with the class "filter-checkboxes"
-const checkboxes = document.querySelectorAll('.filter-checkbox');
+
 
 function showLoadingSpinner() {
     const overlay = document.getElementById('overlay');
@@ -29,6 +28,8 @@ function hideLoadingSpinner() {
     overlay.style.display = 'none';
 }
 
+// Get all elements with the class "filter-checkboxes"
+const checkboxes = document.querySelectorAll('.filter-checkbox');
 // Add a click event listener to each checkbox
 checkboxes.forEach(checkbox => {
     checkbox.addEventListener('click', function () {
@@ -41,6 +42,15 @@ checkboxes.forEach(checkbox => {
 
     });
 });
+
+    // Get all elements with the class "viz"
+    let vizcards = document.querySelectorAll('.viz');
+    console.log(vizcards)
+    // toggle hidden
+    vizcards.forEach(card => {
+        console.log("toggle")
+        card.style.display = 'none'
+    });
 
 function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
     //console.log("update map after checkbox selection")
@@ -67,22 +77,25 @@ function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
 
 }
 
-function plotLineChart(data) {
+function plotLineChart(data, containerId) {
 
     // set the dimensions and margins of the graph
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+    var margin = { top: 5, right: 15, bottom: 15, left: 30 },
+        width = 230 - margin.left - margin.right,
+        height = 200 - margin.top - margin.bottom;
 
     const svgSelection = d3.select('svg');
 
-    // Check if the SVG element exists
-    if (!svgSelection.empty()) {
-        // Remove the SVG element
-        svgSelection.remove();
-    }
+    // // Check if the SVG element exists
+    // if (!svgSelection.empty()) {
+    //     // Remove the SVG element
+    //     console.log("remove svg")
+    //     svgSelection.remove();
+    // }
+
+    console.log(d3.select(containerId))
     // append the svg object to the body of the page
-    var svg = d3.select("#viz")
+    var svg = d3.select(containerId)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -105,7 +118,7 @@ function plotLineChart(data) {
         .range([height, 0]);
     svg.append("g")
         .call(d3.axisLeft(y));
-    //console.log("line")
+    console.log("line")
     // Add the line
     svg.append("path")
         .datum(data)
@@ -129,6 +142,30 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
     //d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
 
     showLoadingSpinner()
+
+
+    // Check if the SVG element exists
+
+    for (let i = 0; i < 5; i++) {
+        console.log("svg")
+        const svgSelection = d3.select('svg');
+        console.log(svgSelection)
+        if (!svgSelection.empty()) {
+            // Remove the SVG element
+            console.log("remove svg")
+            svgSelection.remove();
+        }
+    }
+
+    // Get all elements with the class "viz"
+    let vizcards = document.querySelectorAll('.viz');
+    console.log(vizcards)
+    // toggle hidden
+    vizcards.forEach(card => {
+        console.log("toggle")
+        card.style.display = 'block'
+    });
+
     d3.csv(urlWithParams,
 
         // When reading the csv, I must format variables:
@@ -159,8 +196,19 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
                 });
 
                 console.log('Today:', todayData);
-                plotLineChart(todayData)
+                plotLineChart(todayData, "#viz-day")
                 //console.log("chart done")
+
+                // Filter for the last 7 days
+                const last7DaysData = data.filter(item => {
+                    const itemDate = new Date(item.date);
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(currentDate.getDate() - 7);
+                    return itemDate >= sevenDaysAgo && itemDate <= currentDate;
+                });
+
+                //console.log('Last 7 days:', last7DaysData);
+                plotLineChart(last7DaysData, "#viz-week")
 
                 // Filter for the last 30 days
                 const last30DaysData = data.filter(item => {
@@ -171,17 +219,8 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
                 });
 
                 console.log('Last 30 days:', last30DaysData);
+                plotLineChart(last30DaysData, "#viz-month")
 
-                // Filter for the last 7 days
-                const last7DaysData = data.filter(item => {
-                    const itemDate = new Date(item.date);
-                    const sevenDaysAgo = new Date();
-                    sevenDaysAgo.setDate(currentDate.getDate() - 7);
-                    return itemDate >= sevenDaysAgo && itemDate <= currentDate;
-                });
-
-                console.log('Last 7 days:', last7DaysData);
-                plotLineChart(last7DaysData)
                 // Filter for a year ago
                 const oneYearAgoData = data.filter(item => {
                     const itemDate = new Date(item.date);
@@ -190,7 +229,8 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
                     return itemDate >= oneYearAgo && itemDate <= currentDate;
                 });
 
-                console.log('One year ago:', oneYearAgoData);
+                //console.log('One year ago:', oneYearAgoData);
+                plotLineChart(oneYearAgoData, "#viz-year")
 
             })
 
@@ -212,15 +252,21 @@ function loadGeojsonMap(geojsonData) {
             const htmlString = htmlStrings.join('');
             // add button element with unique id to popup
             //button = '<button id="popupButton' + feature.properties.id + '">Show Observations</button>'
+
+            // let datepicker_form = '<form id="dateForm"> \
+            // <label for="startDate">Start Date:</label> \
+            // <input type="date" id="startDate" name="startDate" required><br> \
+            // <span id="startDateError" style="color: red;"></span><br> \
+            // <label for="endDate">End Date:</label> \
+            // <input type="date" id="endDate" name="endDate" required> <br>\
+            // <span id="endDateError" style="color: red;"></span><br> \
+            // <button type="submit">Show Observations</button> \
+            // </form>'
+
             let datepicker_form = '<form id="dateForm"> \
-            <label for="startDate">Start Date:</label> \
-            <input type="date" id="startDate" name="startDate" required><br> \
-            <span id="startDateError" style="color: red;"></span><br> \
-            <label for="endDate">End Date:</label> \
-            <input type="date" id="endDate" name="endDate" required> <br>\
-            <span id="endDateError" style="color: red;"></span><br> \
             <button type="submit">Show Observations</button> \
             </form>'
+
 
             let popupContent = htmlString + datepicker_form
             //bind popup to layer
@@ -228,27 +274,28 @@ function loadGeojsonMap(geojsonData) {
 
             // in the on click event of marker, add click event listener to button in popup
             layer.on('click', function (event) {
+                console.log("onclick")
 
                 const form = document.getElementById('dateForm');
-                const startDateInput = document.getElementById('startDate'); // Get the input element
-                const startDateError = document.getElementById('startDateError'); // Get the error message element
-                const endDateInput = document.getElementById('endDate'); // Get the input element
-                const endDateError = document.getElementById('endDateError'); // Get the error message element
+                // const startDateInput = document.getElementById('startDate'); // Get the input element
+                // const startDateError = document.getElementById('startDateError'); // Get the error message element
+                // const endDateInput = document.getElementById('endDate'); // Get the input element
+                // const endDateError = document.getElementById('endDateError'); // Get the error message element
 
 
-                // Get the current date
-                const today = new Date();
+                // // Get the current date
+                // const today = new Date();
 
-                // Format the date as "DD-MM-YYYY"
-                const formattedDate = today.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                }).split('/').reverse().join('-'); // Handle different date separator formats
+                // // Format the date as "DD-MM-YYYY"
+                // const formattedDate = today.toLocaleDateString('en-GB', {
+                //     day: '2-digit',
+                //     month: '2-digit',
+                //     year: 'numeric',
+                // }).split('/').reverse().join('-'); // Handle different date separator formats
 
-                // Set the default value of the date input
-                startDateInput.value = formattedDate;
-                endDateInput.value = formattedDate;
+                // // Set the default value of the date input
+                // startDateInput.value = formattedDate;
+                // endDateInput.value = formattedDate;
 
 
                 // Add a click event to the form
@@ -256,27 +303,28 @@ function loadGeojsonMap(geojsonData) {
                     // Handle the button click event here
                     // open observations in another tab
                     event.preventDefault();
-                    let startDate = startDateInput.value;
-                    let endDate = endDateInput.value;
-                    //console.log(startDate)
-                    //console.log(endDate)
-                    // Define your URL parameters as key-value pairs
-                    let query_params = {
-                        start_date: startDate,
-                        end_date: endDate,
-                    };
+                    console.log("onsubmit")
+                    // let startDate = startDateInput.value;
+                    // let endDate = endDateInput.value;
+                    // //console.log(startDate)
+                    // //console.log(endDate)
+                    // // Define your URL parameters as key-value pairs
+                    // let query_params = {
+                    //     start_date: startDate,
+                    //     end_date: endDate,
+                    // };
 
-                    // Create a query string from the parameters
-                    let queryString = Object.keys(query_params)
-                        .map(key => `${key}=${encodeURIComponent(query_params[key])}`)
-                        .join('&');
+                    // // Create a query string from the parameters
+                    // let queryString = Object.keys(query_params)
+                    //     .map(key => `${key}=${encodeURIComponent(query_params[key])}`)
+                    //     .join('&');
 
                     let apiUrl = latest_obs_url + feature.properties.id
-                    let urlWithParams = `${apiUrl}?${queryString}`;
+                    //let urlWithParams = `${apiUrl}?${queryString}`;
                     //console.log(urlWithParams)
                     ////console.log("call to bring up overlay")
-                    ////console.log(feature)
-                    bringUpMeasurementsOverlay(feature, urlWithParams)
+                    console.log(apiUrl)
+                    bringUpMeasurementsOverlay(feature, apiUrl)
                 });
 
             });
@@ -289,6 +337,9 @@ function loadGeojsonMap(geojsonData) {
     ).addTo(map);
 
 }
+
+
+
 // Function to create the map
 function createMap() {
     map = L.map('map').setView(map_center, 13);
