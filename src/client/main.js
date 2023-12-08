@@ -24,10 +24,10 @@ function showLoadingSpinner() {
     console.log("show loading spinner")
     overlay.style.display = 'flex';
 }
-  function hideLoadingSpinner() {
+function hideLoadingSpinner() {
     const overlay = document.getElementById('overlay');
     overlay.style.display = 'none';
-  }
+}
 
 // Add a click event listener to each checkbox
 checkboxes.forEach(checkbox => {
@@ -38,29 +38,6 @@ checkboxes.forEach(checkbox => {
         // Clear the map and load updated geojson data
         map.removeLayer(geojsonLayer);
         loadGeojsonMap(geojsonData);
-
-        // const overlay = document.getElementById('overlay');
-        // const dataVizContainer = document.getElementById('data-viz-container');
-
-        // // Function to show the loading overlay
-        // function showLoadingOverlay() {
-        //     overlay.style.display = 'flex';
-        // }
-
-        // // Function to hide the loading overlay
-        // function hideLoadingOverlay() {
-        //     overlay.style.display = 'none';
-        // }
-
-        // // Function to toggle the overlay
-        // function toggleOverlay() {
-        //     event.stopPropagation();
-        //     overlay.style.display = (overlay.style.display === 'none' || overlay.style.display === '') ? 'flex' : 'none';
-        // }
-
-        // showLoadingOverlay();
-        //     // Add click event listener to the overlay to close it when clicked
-        // overlay.addEventListener('click', toggleOverlay);
 
     });
 });
@@ -90,25 +67,7 @@ function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
 
 }
 
-function bringUpMeasurementsOverlay(feature, urlWithParams) {
-
-
-    // const centerCoordinates = feature.geometry.coordinates; // Assuming center is an array like [latitude, longitude]
-    // const svgWidth = 200; // Adjust the width of your SVG
-    // const svgHeight = 200; // Adjust the height of your SVG
-
-
-
-
-    // var svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    // svgElement.setAttribute('xmlns', "http://www.w3.org/2000/svg");
-    // svgElement.setAttribute('viewBox', "0 0 200 200");
-    // svgElement.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
-    // var svgElementBounds = [[map.getBounds().getSouth(), map.getBounds().getWest()], [map.getBounds().getNorth(), map.getBounds().getEast()]];
-    // //console.log(svgElementBounds)
-    // L.svgOverlay(svgElement, svgElementBounds).addTo(map);
-
-
+function plotLineChart(data) {
 
     // set the dimensions and margins of the graph
     var margin = { top: 10, right: 30, bottom: 30, left: 60 },
@@ -117,11 +76,11 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
 
     const svgSelection = d3.select('svg');
 
-        // Check if the SVG element exists
-        if (!svgSelection.empty()) {
-          // Remove the SVG element
-          svgSelection.remove();
-        }
+    // Check if the SVG element exists
+    if (!svgSelection.empty()) {
+        // Remove the SVG element
+        svgSelection.remove();
+    }
     // append the svg object to the body of the page
     var svg = d3.select("#viz")
         .append("svg")
@@ -130,6 +89,41 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scaleTime()
+        .domain(d3.extent(data, function (d) {
+            return d.date;
+        }))
+        .range([0, width]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+    //console.log("y axis")
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain([0, d3.max(data, function (d) { return +d.value; })])
+        .range([height, 0]);
+    svg.append("g")
+        .call(d3.axisLeft(y));
+    //console.log("line")
+    // Add the line
+    svg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+            .x(function (d) { return x(d.date) })
+            .y(function (d) { return y(d.value) })
+        )
+
+
+}
+
+function bringUpMeasurementsOverlay(feature, urlWithParams) {
+
+
+
 
     //Read the data
     //d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
@@ -146,44 +140,61 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
         }).then(
 
 
-        // Now I can use this dataset:
-        function (data) {
+            // Now I can use this dataset:
+            function (data) {
 
-            hideLoadingSpinner()
-            //console.log("dataset parsed")
-            //console.log("x axis")
-            //console.log(data)
-            // Add X axis --> it is a date format
-            var x = d3.scaleTime()
-                .domain(d3.extent(data, function (d) {
-                    return d.date; }))
-                .range([0, width]);
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x));
-            //console.log("y axis")
-            // Add Y axis
-            var y = d3.scaleLinear()
-                .domain([0, d3.max(data, function (d) { return +d.value; })])
-                .range([height, 0]);
-            svg.append("g")
-                .call(d3.axisLeft(y));
-            //console.log("line")
-            // Add the line
-            svg.append("path")
-                .datum(data)
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-width", 1.5)
-                .attr("d", d3.line()
-                    .x(function (d) { return x(d.date) })
-                    .y(function (d) { return y(d.value) })
-                )
+                hideLoadingSpinner()
+                //console.log("dataset parsed")
+                //console.log("x axis")
+                //console.log(data)
+                // Add X axis --> it is a date format
 
-        })
+                // Get the current date
+                const currentDate = new Date();
+
+                // Filter for today
+                const todayData = data.filter(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate.toDateString() === currentDate.toDateString();
+                });
+
+                console.log('Today:', todayData);
+                plotLineChart(todayData)
+                //console.log("chart done")
+
+                // Filter for the last 30 days
+                const last30DaysData = data.filter(item => {
+                    const itemDate = new Date(item.date);
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+                    return itemDate >= thirtyDaysAgo && itemDate <= currentDate;
+                });
+
+                console.log('Last 30 days:', last30DaysData);
+
+                // Filter for the last 7 days
+                const last7DaysData = data.filter(item => {
+                    const itemDate = new Date(item.date);
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(currentDate.getDate() - 7);
+                    return itemDate >= sevenDaysAgo && itemDate <= currentDate;
+                });
+
+                console.log('Last 7 days:', last7DaysData);
+                plotLineChart(last7DaysData)
+                // Filter for a year ago
+                const oneYearAgoData = data.filter(item => {
+                    const itemDate = new Date(item.date);
+                    const oneYearAgo = new Date();
+                    oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
+                    return itemDate >= oneYearAgo && itemDate <= currentDate;
+                });
+
+                console.log('One year ago:', oneYearAgoData);
+
+            })
 
 
-    //console.log("chart done")
 }
 
 

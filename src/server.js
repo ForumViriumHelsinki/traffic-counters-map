@@ -52,7 +52,7 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         //console.log(response.text())
         //res.json(response.data);
 
-          // Set headers for CSV download
+        // Set headers for CSV download
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
         res.send(response.data);
@@ -70,21 +70,21 @@ app.use(express.static('public'));
 
 // Webpack middleware for development
 if (process.env.NODE_ENV === 'development') {
-  const compiler = webpack(webpackConfig);
-  app.use(
-    webpackDevMiddleware(compiler, {
-      publicPath: webpackConfig.output.publicPath,
-    })
-  );
-  app.use(webpackHotMiddleware(compiler));
+    const compiler = webpack(webpackConfig);
+    app.use(
+        webpackDevMiddleware(compiler, {
+            publicPath: webpackConfig.output.publicPath,
+        })
+    );
+    app.use(webpackHotMiddleware(compiler));
 }
 
 // Serve the index.html file for all other requests
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 
 app.listen(port, host, () => {
-  console.log(`Server is running on http://${host}:${port}`);
+    console.log(`Server is running on http://${host}:${port}`);
 });
