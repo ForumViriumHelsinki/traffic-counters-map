@@ -36,8 +36,6 @@ checkboxes.forEach(checkbox => {
 
 // Get all elements with the class "viz"
 let vizcards = document.querySelectorAll('.viz');
-console.log(vizcards)
-// toggle hidden
 vizcards.forEach(card => {
     card.style.display = 'none'
 });
@@ -46,7 +44,6 @@ vizcards.forEach(card => {
 
 function showLoadingSpinner() {
     const overlay = document.getElementById('overlay');
-    console.log("show loading spinner")
     overlay.style.display = 'flex';
 }
 function hideLoadingSpinner() {
@@ -62,7 +59,6 @@ function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
         ////console.log("print source")
         //console.log(item.properties.source.toLowerCase())
         source = item.properties.source.toLowerCase()
-        console.log(source)
         if (source.startsWith("harbor")) {
             source = "infotripla"
         }
@@ -104,7 +100,6 @@ function plotLineChart(data, containerId) {
     const speedData = data.filter(item => item.typeOfMeasurement === "speed")
     const countData = data.filter(item => item.typeOfMeasurement === "count")
 
-    console.log(d3.select(containerId))
     // append the svg object to the body of the page
     var svg = d3.select(containerId)
         .append("svg")
@@ -121,6 +116,8 @@ function plotLineChart(data, containerId) {
         }))
         .range([0, width]);
 
+        console.log("X-Axis Range:", x.domain());
+
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x).ticks(4));
@@ -131,7 +128,6 @@ function plotLineChart(data, containerId) {
         .range([height, 0]);
     svg.append("g")
         .call(d3.axisLeft(y));
-    console.log("line")
     // Add the line
 
     // Add Y axis
@@ -222,17 +218,14 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
     //d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
 
     showLoadingSpinner()
-    console.log(feature)
 
     // Check if the SVG element exists
 
     for (let i = 0; i < 5; i++) {
-        console.log("svg")
         const svgSelection = d3.select('svg');
-        console.log(svgSelection)
         if (!svgSelection.empty()) {
             // Remove the SVG element
-            console.log("remove svg")
+            console.log("remove svg in bringUpMeasurementsOverlay ")
             svgSelection.remove();
         }
     }
@@ -240,7 +233,7 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
 
     d3.csv(urlWithParams,
         function (d) {
-            //console.log("getting data")
+            console.log("inside d3.csv")
             //console.log(d)
             return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement }
             //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
@@ -276,11 +269,9 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
                     }
 
                     // Get all elements with the class "viz"
+                    console.log("show viz cards")
                     let vizcards = document.querySelectorAll('.viz');
-                    console.log(vizcards)
-                    // toggle hidden
                     vizcards.forEach(card => {
-                        console.log("toggle")
                         card.style.display = 'block'
                     });
 
@@ -292,23 +283,30 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
                         return itemDate.toDateString() === currentDate.toDateString();
                     });
 
-                    console.log('Today:', todayData);
+                    console.log('Today:')
+                    console.log( todayData);
                     plotLineChart(todayData, "#viz-day")
-                    //console.log("chart done")
+
 
                     // Filter for the last 7 days
-                    //console.log('Last 7 days:', last7DaysData);
+
                     const last7DaysData = filterLastXDaysData(data, 7);
+                    console.log('Last 7 days:')
+                    console.log(last7DaysData);
                     plotLineChart(last7DaysData, "#viz-week")
 
                     // Filter for the last 30 days
-                    //console.log('Last 30 days:', last30DaysData);
+
                     const last30DaysData = filterLastXDaysData(data, 30);
+                    console.log('Last 30 days:')
+                    console.log( last30DaysData);
                     plotLineChart(last30DaysData, "#viz-month")
 
                     // Filter for a year ago
-                    //console.log('One year ago:', oneYearAgoData);
+
                     const oneYearAgoData = filterLastXDaysData(data, 365);
+                    console.log('One year ago:')
+                    console.log( oneYearAgoData);
                     plotLineChart(oneYearAgoData, "#viz-year")
 
                 }
@@ -321,8 +319,6 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
 function loadGeojsonMap(geojsonData) {
 
     function onEachFeature(feature, layer) {
-        // does this feature have a property named popupContent?
-        ////console.log(feature.properties)
         if (feature.properties) {
             const htmlStrings = Object.entries(feature.properties).map(([key, value]) => `
             <strong>${key}:</strong> ${value}<br/>
@@ -355,9 +351,6 @@ function loadGeojsonMap(geojsonData) {
                     console.log("onsubmit")
 
                     let apiUrl = latest_obs_url + feature.properties.id
-                    //let urlWithParams = `${apiUrl}?${queryString}`;
-                    //console.log(urlWithParams)
-                    ////console.log("call to bring up overlay")
                     console.log(apiUrl)
                     bringUpMeasurementsOverlay(feature, apiUrl)
                 });
