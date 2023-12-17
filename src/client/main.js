@@ -95,18 +95,14 @@ function filterLastXDaysData(data, noOfDays) {
 function plotLineChart(data, containerId) {
 
     // set the dimensions and margins of the graph
-    var margin = { top: 5, right: 15, bottom: 35, left: 30 },
-        width = 230 - margin.left - margin.right,
+    var margin = { top: 5, right: 10, bottom: 35, left: 25 },
+        width = 290 - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
 
     const svgSelection = d3.select('svg');
 
-    // // Check if the SVG element exists
-    // if (!svgSelection.empty()) {
-    //     // Remove the SVG element
-    //     console.log("remove svg")
-    //     svgSelection.remove();
-    // }
+    const speedData = data.filter(item => item.typeOfMeasurement === "speed")
+    const countData = data.filter(item => item.typeOfMeasurement === "count")
 
     console.log(d3.select(containerId))
     // append the svg object to the body of the page
@@ -137,15 +133,34 @@ function plotLineChart(data, containerId) {
         .call(d3.axisLeft(y));
     console.log("line")
     // Add the line
-    svg.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-            .x(function (d) { return x(d.date) })
-            .y(function (d) { return y(d.value) })
-        )
+
+    // Add Y axis
+
+    if (speedData.length > 0) {
+        // Add the line for "speed"
+        svg.append("path")
+            .datum(speedData)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function (d) { return x(d.date) })
+                .y(function (d) { return y(+d.value) })
+            );
+    }
+
+    if (countData.length > 0) {
+        // Add the line for "count"
+        svg.append("path")
+            .datum(countData)
+            .attr("fill", "none")
+            .attr("stroke", "orange")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function (d) { return x(d.date) })
+                .y(function (d) { return y(+d.value) })
+            );
+    }
 
     // Add x-axis label
     svg.append('text')
@@ -154,6 +169,44 @@ function plotLineChart(data, containerId) {
         .attr('transform', `translate(${width / 2},${height + margin.bottom - 1})`)
         .text('Date');
 
+    // Create legends
+    var legends = svg.append("g")
+        .attr("class", "legends")
+        .attr("transform", "translate(" + (width - 30) + "," + 0 + ")"); // Adjust the legend position
+
+    // Legend for "speed" data
+    if (speedData.length > 0) {
+        legends.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 8)
+            .attr("height", 8)
+            .attr("fill", "steelblue");
+
+        legends.append("text")
+            .attr("x", 15)
+            .attr("y", 5)
+            .attr("dy", ".35em")
+            .style("font-size", "8px")
+            .text("Speed");
+    }
+
+    // Legend for "count" data
+    if (countData.length > 0) {
+        legends.append("rect")
+            .attr("x", 0)
+            .attr("y", 15)
+            .attr("width", 8)
+            .attr("height", 8)
+            .attr("fill", "orange");
+
+        legends.append("text")
+            .attr("x", 15)
+            .attr("y", 20)
+            .attr("dy", ".35em")
+            .style("font-size", "8px")
+            .text("Count");
+    }
 
 }
 
@@ -205,9 +258,9 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
 
                 console.log("Number of rows:", data.length);
 
+                var errorDiv = document.getElementById("errorDiv");
                 if (data.length === 0) {
                     // Display the error message in the specified div with id "errorDiv"
-                    var errorDiv = document.getElementById("errorDiv");
                     if (errorDiv) {
                         errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter" + "</p>";
                     } else {
@@ -216,6 +269,11 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
 
                 }
                 else {
+                    if (errorDiv) {
+                        errorDiv.innerHTML = "";
+                    } else {
+                        console.error("Error div with id 'errorDiv' not found.");
+                    }
 
                     // Get all elements with the class "viz"
                     let vizcards = document.querySelectorAll('.viz');
