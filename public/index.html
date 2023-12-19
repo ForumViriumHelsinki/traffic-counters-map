@@ -13,7 +13,7 @@
 <body>
     <!-- Loading spinner element -->
     <div id="overlay">
-        <div id="loading-spinner"></div>
+        <div class="loading-spinner"></div>
         <p>Loading...</p>
     </div>
 
@@ -59,9 +59,12 @@
             <div class="d-flex flex-fill flex-row mt-3">
                 <div class="col-md-6 d-flex flex-column">
                     <div class="card hidden viz">
-                        <div class="card-body">
+                        <div class="card-body" >
                             <p><b>Data from today</b></p>
-                            <div id="viz-day">
+                            <div id="viz-day-spinner" class="loading-container" >
+                                <div class="loading-spinner"></div>
+                            </div>
+                            <div id="viz-day" >
                             </div>
                         </div>
                     </div>
@@ -70,6 +73,9 @@
                     <div class="card hidden viz">
                         <div class="card-body">
                             <p><b>Data from the past week</b></p>
+                            <div id="viz-week-spinner" class="loading-container" >
+                                <div class="loading-spinner"></div>
+                            </div>
                             <div id="viz-week">
                             </div>
                         </div>
@@ -83,7 +89,7 @@
                     <div class="card hidden viz">
                         <div class="card-body">
                             <p><b>Data from the past month</b></p>
-                            <div id="viz-month">
+                            <div id="viz-month" >
                             </div>
                         </div>
                     </div>
@@ -92,7 +98,7 @@
                     <div class="card hidden viz">
                         <div class="card-body">
                             <p><b>Data from the past year</b></p>
-                            <div id="viz-year">
+                            <div id="viz-year" >
                             </div>
                         </div>
                     </div>

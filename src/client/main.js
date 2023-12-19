@@ -34,13 +34,20 @@ checkboxes.forEach(checkbox => {
     });
 });
 
-// Get all elements with the class "viz"
-let vizcards = document.querySelectorAll('.viz');
-vizcards.forEach(card => {
-    card.style.display = 'none'
-});
+function showVizCards(show) {
+    // Get all elements with the class "viz"
+    let vizcards = document.querySelectorAll('.viz');
+    let display = 'none'
+    if (show) {
+        display = 'block'
+    }
+    vizcards.forEach(card => {
+        card.style.display = display
+    });
+}
 
 
+showVizCards(false)
 
 function showLoadingSpinner() {
     const overlay = document.getElementById('overlay');
@@ -50,6 +57,22 @@ function hideLoadingSpinner() {
     const overlay = document.getElementById('overlay');
     overlay.style.display = 'none';
 }
+
+// Function to show loading spinner for a specific viz element
+function showVizLoadingSpinner(vizId) {
+    //document.getElementById(vizId).classList.add('loading-spinner');
+
+    const overlay = document.getElementById(vizId);
+    overlay.style.display = 'flex';
+
+}
+
+// Function to hide loading spinner for a specific viz element
+function hideVizLoadingSpinner(vizId) {
+    const overlay = document.getElementById(vizId);
+    overlay.style.display = 'none';
+}
+
 
 function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
     console.log("update map after checkbox selection")
@@ -91,7 +114,7 @@ function filterLastXDaysData(data, noOfDays) {
 function plotLineChart(data, containerId) {
 
     // set the dimensions and margins of the graph
-    var margin = { top: 5, right: 10, bottom: 35, left: 25 },
+    var margin = { top: 5, right: 10, bottom: 20, left: 25 },
         width = 290 - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
 
@@ -116,7 +139,7 @@ function plotLineChart(data, containerId) {
         }))
         .range([0, width]);
 
-        console.log("X-Axis Range:", x.domain());
+    console.log("X-Axis Range:", x.domain());
 
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
@@ -158,12 +181,12 @@ function plotLineChart(data, containerId) {
             );
     }
 
-    // Add x-axis label
-    svg.append('text')
-        .attr('class', 'x-axis-label')
-        .attr('text-anchor', 'middle') // Center the label
-        .attr('transform', `translate(${width / 2},${height + margin.bottom - 1})`)
-        .text('Date');
+    // // Add x-axis label
+    // svg.append('text')
+    //     .attr('class', 'x-axis-label')
+    //     .attr('text-anchor', 'middle') // Center the label
+    //     .attr('transform', `translate(${width / 2},${height + margin.bottom - 1})`)
+    //     .text('Date');
 
     // Create legends
     var legends = svg.append("g")
@@ -207,20 +230,40 @@ function plotLineChart(data, containerId) {
 }
 
 
+function formatDate(date) {
+
+    return date.toLocaleDateString('fi-FI', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    }).split('.').reverse().join('-');
+}
 
 
-function bringUpMeasurementsOverlay(feature, urlWithParams) {
+function fetchGetObservationsUrl(counterId, startDate, endDate) {
+
+    let apiUrl = latest_obs_url + counterId
+    const formattedStartDate = formatDate(startDate);
+    console.log(formattedStartDate)
+
+    const formattedEndDate = formatDate(endDate);
+    console.log(formattedEndDate)
+
+    const queryParams = { 'startDate': formattedStartDate, 'endDate': formattedEndDate };
+    let queryString = Object.keys(queryParams)
+        .map(key => `${key}=${encodeURIComponent(queryParams[key])}`)
+        .join('&');
+    let urlWithParams = `${apiUrl}?${queryString}`;
+
+    console.log(urlWithParams)
+
+    return urlWithParams
 
 
+}
 
-
-    //Read the data
-    //d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
-
-    showLoadingSpinner()
-
-    // Check if the SVG element exists
-
+function removeSVG() {
+    // Check if the SVG element exists and remove if yes
     for (let i = 0; i < 5; i++) {
         const svgSelection = d3.select('svg');
         if (!svgSelection.empty()) {
@@ -229,88 +272,119 @@ function bringUpMeasurementsOverlay(feature, urlWithParams) {
             svgSelection.remove();
         }
     }
+}
 
+function displayNoDataError(errorDiv, showErr) {
+
+    // Display the error message in the specified div with id "errorDiv"
+    if (errorDiv) {
+        if (showErr) {
+            errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter" + "</p>";
+        }
+        else {
+            errorDiv.innerHTML = "";
+        }
+    } else {
+        console.error("Error div with id 'errorDiv' not found.");
+    }
+
+}
+function bringUpMeasurementsOverlay(feature) {
+
+    console.log("show viz cards")
+    showVizCards(true)
+    removeSVG()
+
+    showVizLoadingSpinner("viz-day-spinner")
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, today, tomorrow)
 
     d3.csv(urlWithParams,
         function (d) {
-            console.log("inside d3.csv")
-            //console.log(d)
             return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement }
             //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
         }).then(
-
-
             // Now I can use this dataset:
             function (data) {
 
                 console.log("csv read")
-                // Data is loaded successfully
-                console.log("Number of rows:", data.length);
-                console.log(data)
-                hideLoadingSpinner()
-
                 console.log("Number of rows:", data.length);
 
                 var errorDiv = document.getElementById("errorDiv");
                 if (data.length === 0) {
-                    // Display the error message in the specified div with id "errorDiv"
-                    if (errorDiv) {
-                        errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter" + "</p>";
-                    } else {
-                        console.error("Error div with id 'errorDiv' not found.");
-                    }
+                    showVizCards(false)
+                    displayNoDataError(errorDiv, true)
 
                 }
                 else {
-                    if (errorDiv) {
-                        errorDiv.innerHTML = "";
-                    } else {
-                        console.error("Error div with id 'errorDiv' not found.");
-                    }
-
-                    // Get all elements with the class "viz"
-                    console.log("show viz cards")
-                    let vizcards = document.querySelectorAll('.viz');
-                    vizcards.forEach(card => {
-                        card.style.display = 'block'
-                    });
+                    displayNoDataError(errorDiv, false)
+                    hideVizLoadingSpinner("viz-day-spinner")
+                    plotLineChart(data, "#viz-day")
 
 
-                    // Filter for today
-                    const todayData = data.filter(item => {
-                        const currentDate = new Date();
-                        const itemDate = new Date(item.date);
-                        return itemDate.toDateString() === currentDate.toDateString();
-                    });
+                    // // Filter for the last 7 days
 
-                    console.log('Today:')
-                    console.log( todayData);
-                    plotLineChart(todayData, "#viz-day")
+                    // const last7DaysData = filterLastXDaysData(data, 7);
+                    // console.log('Last 7 days:')
+                    // console.log(last7DaysData);
+                    // plotLineChart(last7DaysData, "#viz-week")
 
+                    // // Filter for the last 30 days
 
-                    // Filter for the last 7 days
+                    // const last30DaysData = filterLastXDaysData(data, 30);
+                    // console.log('Last 30 days:')
+                    // console.log(last30DaysData);
+                    // plotLineChart(last30DaysData, "#viz-month")
 
-                    const last7DaysData = filterLastXDaysData(data, 7);
-                    console.log('Last 7 days:')
-                    console.log(last7DaysData);
-                    plotLineChart(last7DaysData, "#viz-week")
+                    // // Filter for a year ago
 
-                    // Filter for the last 30 days
-
-                    const last30DaysData = filterLastXDaysData(data, 30);
-                    console.log('Last 30 days:')
-                    console.log( last30DaysData);
-                    plotLineChart(last30DaysData, "#viz-month")
-
-                    // Filter for a year ago
-
-                    const oneYearAgoData = filterLastXDaysData(data, 365);
-                    console.log('One year ago:')
-                    console.log( oneYearAgoData);
-                    plotLineChart(oneYearAgoData, "#viz-year")
+                    // const oneYearAgoData = filterLastXDaysData(data, 365);
+                    // console.log('One year ago:')
+                    // console.log(oneYearAgoData);
+                    // plotLineChart(oneYearAgoData, "#viz-year")
 
                 }
-            })
+                return data
+            }).then(
+                function (data) {
+
+
+                    const today = new Date();
+                    const last7Days = new Date(today);
+                    last7Days.setDate(today.getDate() - 7);
+                    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, last7Days, today)
+
+                    d3.csv(urlWithParams,
+                        function (d) {
+                            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement }
+                            //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
+                        }).then(
+                            // Now I can use this dataset:
+                            function (data) {
+
+                                console.log("csv read")
+                                console.log("Number of rows:", data.length);
+
+                                var errorDiv = document.getElementById("errorDiv");
+                                if (data.length === 0) {
+                                    showVizCards(false)
+                                    displayNoDataError(errorDiv, true)
+
+                                }
+                                else {
+                                    showVizCards(true)
+                                    displayNoDataError(errorDiv, false)
+                                    hideVizLoadingSpinner("viz-week-spinner")
+                                    plotLineChart(data, "#viz-week")
+                                }
+                            }
+
+
+                        )
+                })
 
 
 }
@@ -338,11 +412,9 @@ function loadGeojsonMap(geojsonData) {
 
             // in the on click event of marker, add click event listener to button in popup
             layer.on('click', function (event) {
-                console.log("onclick")
-
+                //event.preventDefault(); L.DomEvent.stopPropagation(event);
+                console.log("onclick marker")
                 const form = document.getElementById('dateForm');
-
-
                 // Add a click event to the form
                 form.addEventListener('submit', function (event) {
                     // Handle the button click event here
@@ -350,9 +422,8 @@ function loadGeojsonMap(geojsonData) {
                     event.preventDefault();
                     console.log("onsubmit")
 
-                    let apiUrl = latest_obs_url + feature.properties.id
-                    console.log(apiUrl)
-                    bringUpMeasurementsOverlay(feature, apiUrl)
+
+                    bringUpMeasurementsOverlay(feature)
                 });
 
             });

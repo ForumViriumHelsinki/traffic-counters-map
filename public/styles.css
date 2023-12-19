@@ -40,14 +40,23 @@ body, html {
     z-index: 2;
 }
 
-#loading-spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3); /* Light border color */
+.loading-container{
+    display: none;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(72, 237, 12, 0.3); /* Light border color */
     border-radius: 50%;
     border-top: 4px solid #ffffff; /* White top border */
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     animation: spin 1s linear infinite; /* Spin animation */
     margin-bottom: 10px;
+    z-index: 3;
 }
 
 @keyframes spin {

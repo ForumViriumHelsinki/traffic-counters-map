@@ -64,8 +64,8 @@ app.get('/api/observations-latest/:id', async (req, res) => {
     try {
         // format: 'json'
         const queryParams = { order: '-datetime', counter: req.params.id };
-        // queryParams["start-date"] = req.query.start_date
-        // queryParams["end-date"] = req.query.end_date
+        queryParams["start_date"] = req.query.startDate
+        queryParams["end_date"] = req.query.endDate
         console.log(req.params.id)
         queryParams["format"] = "json"
 
@@ -75,7 +75,6 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         const urlWithQuery = `${url}?${queryString}`;
         console.log("urlWithQuery " + urlWithQuery)
         const response = await axios.get(urlWithQuery);
-        //console.log(response.text())
         //res.json(response.data);
         pagesize = 1000
         if (response.data && response.data["count"] != 0) {
@@ -103,9 +102,6 @@ app.get('/api/observations-latest/:id', async (req, res) => {
             csv_data = 'Column1,Column2,Column3\n'
             res.send(csv_data);
         }
-
-
-
 
     } catch (error) {
         console.error('Error ::', error.message);
