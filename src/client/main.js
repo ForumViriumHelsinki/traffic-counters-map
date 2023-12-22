@@ -16,23 +16,83 @@ let geojsonData; // Define the variable to store geojson data
 let geojsonLayer;
 let map
 
+document.addEventListener('DOMContentLoaded', function () {
+
+    console.log("dom loaded")
+    // Wait for the DOM to be fully loaded
+    const counterIdForm = document.getElementById('counterIdForm');
+    const numericInput = document.getElementById('numericInput');
+    const errorMessage = document.getElementById('errorMessage');
 
 
 
-// Get all elements with the class "filter-checkboxes"
-const checkboxes = document.querySelectorAll('.filter-checkbox');
-// Add a click event listener to each checkbox
-checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('click', function () {
-        const clickedId = checkbox.id;
-        //Update geojson data based on the checkbox selection
-        geojsonData = updateGeojsonWithCheckboxSelection(geojsonData, checkbox);
-        // Clear the map and load updated geojson data
-        map.removeLayer(geojsonLayer);
-        loadGeojsonMap(geojsonData);
 
+    if (counterIdForm) {
+
+        counterIdForm.addEventListener('submit', function (event) {
+            // Your validation logic here
+            // Check if the input value is a number
+            event.preventDefault(); // Prevent form submission
+            if (!/^\d+$/.test(numericInput.value)) {
+                errorMessage.textContent = 'Please enter a valid numeric counter ID.';
+
+            } else {
+                errorMessage.textContent = ''; // Clear error message if input is valid
+
+                const counterId = Number(numericInput.value);
+
+                const counterInfo = geojsonData.features.filter(feature => feature.properties.id === counterId)[0];
+
+                // Get all elements with the class "filter-checkboxes"
+                const checkboxes = document.querySelectorAll('.filter-checkbox');
+                // Add a click event listener to each checkbox
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false
+                });
+
+                geojsonData = updateGeojsonWithCounterIdSelection(geojsonData, counterId);
+                // Clear the map and load updated geojson data
+                map.removeLayer(geojsonLayer);
+                loadGeojsonMap(geojsonData);
+                console.log(counterInfo)
+                console.log(counterInfo.geometry)
+                map.panTo(new L.LatLng(counterInfo.geometry.coordinates[1], counterInfo.geometry.coordinates[0]));
+
+                bringUpMeasurementsOverlay(counterInfo)
+                numericInput.value = '';
+
+            }
+
+
+        });
+    }
+
+
+    // Get all elements with the class "filter-checkboxes"
+    const checkboxes = document.querySelectorAll('.filter-checkbox');
+    // Add a click event listener to each checkbox
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('click', function () {
+            const clickedId = checkbox.id;
+            //Update geojson data based on the checkbox selection
+            geojsonData = updateGeojsonWithCheckboxSelection(geojsonData, checkbox);
+            // Clear the map and load updated geojson data
+            map.removeLayer(geojsonLayer);
+            loadGeojsonMap(geojsonData);
+
+        });
     });
+
+
+    showVizCards(false)
+
 });
+
+
+
+
+
+
 
 function showVizCards(show) {
     // Get all elements with the class "viz"
@@ -47,7 +107,7 @@ function showVizCards(show) {
 }
 
 
-showVizCards(false)
+
 
 function showLoadingSpinner() {
     const overlay = document.getElementById('overlay');
@@ -55,21 +115,6 @@ function showLoadingSpinner() {
 }
 function hideLoadingSpinner() {
     const overlay = document.getElementById('overlay');
-    overlay.style.display = 'none';
-}
-
-// Function to show loading spinner for a specific viz element
-function showVizLoadingSpinner(vizId) {
-    //document.getElementById(vizId).classList.add('loading-spinner');
-
-    const overlay = document.getElementById(vizId);
-    overlay.style.display = 'flex';
-
-}
-
-// Function to hide loading spinner for a specific viz element
-function hideVizLoadingSpinner(vizId) {
-    const overlay = document.getElementById(vizId);
     overlay.style.display = 'none';
 }
 
@@ -98,17 +143,45 @@ function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
 
 }
 
-function filterLastXDaysData(data, noOfDays) {
+
+function updateGeojsonWithCounterIdSelection(geojsonData, counterId) {
+    console.log("update map after counter id input")
+
+    geojsonData.features = geojsonData.features.map((item) => {
+
+        let id = item.properties.id
+
+
+        if (id === counterId) {
+            item.properties.show_on_map = true;
+        }
+        else {
+            item.properties.show_on_map = false;
+        }
+
+        return item;
+    });
+    return geojsonData
+
+}
+
+function filterPastData(data, noOfDaysAgo, noOfHoursAgo) {
 
     const currentDate = new Date();
-    const lastXDaysData = data.filter(item => {
+    const pastDate = new Date();
+    pastDate.setDate(currentDate.getDate() - noOfDaysAgo);
+    pastDate.setHours(currentDate.getHours() - noOfHoursAgo);
+    const filteredData = filterTimeSeriesData(data, pastDate, currentDate)
+    return filteredData
+}
+
+function filterTimeSeriesData(data, startTime, EndTime) {
+    const filteredData = data.filter(item => {
         const itemDate = new Date(item.date);
-        const XDaysAgo = new Date();
-        XDaysAgo.setDate(currentDate.getDate() - noOfDays);
-        return itemDate >= XDaysAgo && itemDate <= currentDate;
+        return itemDate > startTime && itemDate <= EndTime;
     });
 
-    return lastXDaysData
+    return filteredData
 }
 
 function plotLineChart(data, containerId) {
@@ -118,7 +191,7 @@ function plotLineChart(data, containerId) {
         width = 290 - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
 
-    const svgSelection = d3.select('svg');
+    //const svgSelection = d3.select('svg');
 
     const speedData = data.filter(item => item.typeOfMeasurement === "speed")
     const countData = data.filter(item => item.typeOfMeasurement === "count")
@@ -279,7 +352,7 @@ function displayNoDataError(errorDiv, showErr) {
     // Display the error message in the specified div with id "errorDiv"
     if (errorDiv) {
         if (showErr) {
-            errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter" + "</p>";
+            errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter in the past month" + "</p>";
         }
         else {
             errorDiv.innerHTML = "";
@@ -291,25 +364,37 @@ function displayNoDataError(errorDiv, showErr) {
 }
 function bringUpMeasurementsOverlay(feature) {
 
+
+    const counterInfoDiv = document.getElementById('counterInfoDiv');
+    counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+
+
     console.log("show viz cards")
     showVizCards(true)
     removeSVG()
 
-    showVizLoadingSpinner("viz-day-spinner")
+    //showVizLoadingSpinner("viz-day-spinner")
+
+    showLoadingSpinner()
 
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, today, tomorrow)
+    const aMonthAgo = new Date(today);
+    aMonthAgo.setDate(today.getDate() - 30);
+
+    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, aMonthAgo, tomorrow)
 
     d3.csv(urlWithParams,
         function (d) {
-            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement }
+
+            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement, direction: d.direction }
             //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
         }).then(
             // Now I can use this dataset:
             function (data) {
 
+                hideLoadingSpinner()
                 console.log("csv read")
                 console.log("Number of rows:", data.length);
 
@@ -321,23 +406,34 @@ function bringUpMeasurementsOverlay(feature) {
                 }
                 else {
                     displayNoDataError(errorDiv, false)
-                    hideVizLoadingSpinner("viz-day-spinner")
-                    plotLineChart(data, "#viz-day")
+                    //hideVizLoadingSpinner("viz-day-spinner")
+                    //plotLineChart(data, "#viz-day")
+
+                    const thisHourData = filterPastData(data, 0, 1);
+                    console.log('Last 7 days:')
+                    console.log(thisHourData);
+                    plotLineChart(thisHourData, "#viz-hour")
 
 
-                    // // Filter for the last 7 days
 
-                    // const last7DaysData = filterLastXDaysData(data, 7);
-                    // console.log('Last 7 days:')
-                    // console.log(last7DaysData);
-                    // plotLineChart(last7DaysData, "#viz-week")
+                    const todayData = filterPastData(data, 1, 0);
+                    console.log('Last 7 days:')
+                    console.log(todayData);
+                    plotLineChart(todayData, "#viz-day")
 
-                    // // Filter for the last 30 days
+                    // Filter for the last 7 days
 
-                    // const last30DaysData = filterLastXDaysData(data, 30);
-                    // console.log('Last 30 days:')
-                    // console.log(last30DaysData);
-                    // plotLineChart(last30DaysData, "#viz-month")
+                    const last7DaysData = filterPastData(data, 7, 0);
+                    console.log('Last 7 days:')
+                    console.log(last7DaysData);
+                    plotLineChart(last7DaysData, "#viz-week")
+
+                    // Filter for the last 30 days
+
+                    const last30DaysData = filterPastData(data, 30, 0);
+                    console.log('Last 30 days:')
+                    console.log(last30DaysData);
+                    plotLineChart(last30DaysData, "#viz-month")
 
                     // // Filter for a year ago
 
@@ -347,44 +443,7 @@ function bringUpMeasurementsOverlay(feature) {
                     // plotLineChart(oneYearAgoData, "#viz-year")
 
                 }
-                return data
-            }).then(
-                function (data) {
-
-
-                    const today = new Date();
-                    const last7Days = new Date(today);
-                    last7Days.setDate(today.getDate() - 7);
-                    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, last7Days, today)
-
-                    d3.csv(urlWithParams,
-                        function (d) {
-                            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement }
-                            //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
-                        }).then(
-                            // Now I can use this dataset:
-                            function (data) {
-
-                                console.log("csv read")
-                                console.log("Number of rows:", data.length);
-
-                                var errorDiv = document.getElementById("errorDiv");
-                                if (data.length === 0) {
-                                    showVizCards(false)
-                                    displayNoDataError(errorDiv, true)
-
-                                }
-                                else {
-                                    showVizCards(true)
-                                    displayNoDataError(errorDiv, false)
-                                    hideVizLoadingSpinner("viz-week-spinner")
-                                    plotLineChart(data, "#viz-week")
-                                }
-                            }
-
-
-                        )
-                })
+            })
 
 
 }
@@ -401,7 +460,8 @@ function loadGeojsonMap(geojsonData) {
             // Join the HTML strings to form a complete HTML string
             const htmlString = htmlStrings.join('');
 
-            let datepicker_form = '<form id="dateForm"> \
+            const dateForm = "dateForm" + feature.properties.id
+            let datepicker_form = '<form id="' + dateForm + '"> \
             <button type="submit">Show Observations</button> \
             </form>'
 
@@ -414,7 +474,7 @@ function loadGeojsonMap(geojsonData) {
             layer.on('click', function (event) {
                 //event.preventDefault(); L.DomEvent.stopPropagation(event);
                 console.log("onclick marker")
-                const form = document.getElementById('dateForm');
+                const form = document.getElementById(dateForm);
                 // Add a click event to the form
                 form.addEventListener('submit', function (event) {
                     // Handle the button click event here
@@ -440,8 +500,9 @@ function loadGeojsonMap(geojsonData) {
 
 
 // Function to create the map
-function createMap() {
-    map = L.map('map').setView(map_center, 13);
+function createMap(map_center_point) {
+    showVizCards(false)
+    map = L.map('map').setView(map_center_point, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
@@ -453,7 +514,7 @@ function createMap() {
             //setTimeout(1000)
             hideLoadingSpinner()
             geojson.features = geojson.features.map((item) => {
-                item.properties.show_on_map = false
+                item.properties.show_on_map = true
                 return item
             });
             geojsonData = geojson; // Store the initial geojson data
@@ -467,4 +528,4 @@ function createMap() {
 }
 
 // Call the function to create the map
-createMap();
+createMap(map_center);

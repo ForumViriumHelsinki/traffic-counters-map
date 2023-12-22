@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -18,6 +19,60 @@
     </div>
 
 
+    <div class="row mt-2 mx-2 rounded border p-1 mb-2">
+
+
+        <div class="col-auto">
+            <label for="timeSwitch">Show default time windows</label>
+            <input type="checkbox" id="timeSwitch" data-bootstrap-switch checked>
+
+        </div>
+        <div class="col-auto">
+
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                <div class="col-auto">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" name="endDate" required>
+                </div>
+                <!-- <span id="dateError" style="color: red;"></span><br> -->
+            </div>
+
+
+
+        </div>
+
+        <div class="col-auto">
+
+            <!-- <p>Filter counters by source</p> -->
+            <div class="checkbox ">
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="ecocounter"
+                        checked>EcoCounter
+                </label>
+                <!-- <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
+                id="fintraffic">FinTraffic
+        </label> -->
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="hel lam" checked>HEL
+                    LAM </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="infotripla"
+                        checked>Info Tripla
+                </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="marksman"
+                        checked>Marksman
+                </label>
+                <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva" checked>Liva
+                </label>
+
+            </div>
+
+
+
+        </div>
+    </div>
+
     <div class="row">
 
         <!-- Map on the Left -->
@@ -25,31 +80,29 @@
 
         <!-- Container for Visualizations on the right -->
         <div class="lmap col-md-6 d-flex flex-column" style="height: 800px;">
-            <div class="row mt-3 mx-3">
+            <div class="row mt-2 mx-2">
                 <div class="card">
                     <div class="card-body">
-                        <p>Filter counters by source</p>
-                        <div class="checkbox ">
-                            <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
-                                    id="ecocounter">EcoCounter
-                            </label>
-                            <!-- <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
-                                    id="fintraffic">FinTraffic
-                            </label> -->
-                            <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
-                                    id="hel lam">HEL LAM </label>
-                            <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
-                                    id="infotripla">Info Tripla
-                            </label>
-                            <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
-                                    id="marksman">Marksman
-                            </label>
-                            <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva">Liva
-                            </label>
 
-                        </div>
-                        <p>Click on a counter marker to visualize the measurements</p>
+
+                        <form id="counterIdForm">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="numericInput"
+                                            placeholder="Enter a counter ID" required>
+
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary">Go</button>
+                                </div>
+                                <div class="error-message" id="errorMessage" style='color: red;'></div>
+                            </div>
+                        </form>
+                        <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
                         <div id="errorDiv"></div>
+                        <div id="counterInfoDiv" style='color: blue;'></div>
                     </div>
 
                 </div>
@@ -59,12 +112,9 @@
             <div class="d-flex flex-fill flex-row mt-3">
                 <div class="col-md-6 d-flex flex-column">
                     <div class="card hidden viz">
-                        <div class="card-body" >
-                            <p><b>Data from today</b></p>
-                            <div id="viz-day-spinner" class="loading-container" >
-                                <div class="loading-spinner"></div>
-                            </div>
-                            <div id="viz-day" >
+                        <div class="card-body">
+                            <p><b>Data from past hour</b></p>
+                            <div id="viz-hour">
                             </div>
                         </div>
                     </div>
@@ -72,11 +122,8 @@
                 <div class="col-md-6 d-flex flex-column">
                     <div class="card hidden viz">
                         <div class="card-body">
-                            <p><b>Data from the past week</b></p>
-                            <div id="viz-week-spinner" class="loading-container" >
-                                <div class="loading-spinner"></div>
-                            </div>
-                            <div id="viz-week">
+                            <p><b>Data from today</b></p>
+                            <div id="viz-day">
                             </div>
                         </div>
                     </div>
@@ -88,8 +135,8 @@
                 <div class="col-md-6 d-flex flex-column">
                     <div class="card hidden viz">
                         <div class="card-body">
-                            <p><b>Data from the past month</b></p>
-                            <div id="viz-month" >
+                            <p><b>Data from the past week</b></p>
+                            <div id="viz-week">
                             </div>
                         </div>
                     </div>
@@ -97,8 +144,8 @@
                 <div class="col-md-6">
                     <div class="card hidden viz">
                         <div class="card-body">
-                            <p><b>Data from the past year</b></p>
-                            <div id="viz-year" >
+                            <p><b>Data from the past month</b></p>
+                            <div id="viz-month">
                             </div>
                         </div>
                     </div>
