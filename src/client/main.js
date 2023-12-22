@@ -15,6 +15,10 @@ const map_center = [60.1698, 24.9384]; // Helsinki coordinates
 let geojsonData; // Define the variable to store geojson data
 let geojsonLayer;
 let map
+let selectedStartDate = null
+let selectedEndDate = null
+let isDefaultTimeWindow = true
+let timeWindowErrMsg = ''
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -38,11 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } else {
                 errorMessage.textContent = ''; // Clear error message if input is valid
-
                 const counterId = Number(numericInput.value);
-
                 const counterInfo = geojsonData.features.filter(feature => feature.properties.id === counterId)[0];
-
                 // Get all elements with the class "filter-checkboxes"
                 const checkboxes = document.querySelectorAll('.filter-checkbox');
                 // Add a click event listener to each checkbox
@@ -84,12 +85,63 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    showVizCards(false)
+    // Get the date input element
+    var startDate = document.getElementById('startDate');
+
+    // Add event listener for the 'change' event
+    startDate.addEventListener('change', function (e) {
+        // Handle the date change event here
+        selectedStartDate = new Date(e.target.value);
+        console.log('Selected start date:', selectedStartDate);
+    });
+
+    // Get the date input element
+    var endDate = document.getElementById('endDate');
+
+    // Add event listener for the 'change' event
+    endDate.addEventListener('change', function (e) {
+        // Handle the date change event here
+        selectedEndDate = new Date(e.target.value);
+        console.log('Selected end date:', selectedEndDate);
+    });
+
+    var timeWindowSWitch = document.getElementById('timeSwitch');
+    timeWindowSWitch.addEventListener('click', function () {
+        // Handle the date change event here
+        isDefaultTimeWindow = !isDefaultTimeWindow
+        console.log('Selected default time window: ', isDefaultTimeWindow)
+
+
+
+    });
+
 
 });
 
+function validateTimeWIndowInput() {
 
-
+    console.log("validateTimeWIndowInput")
+    if (isDefaultTimeWindow) {
+        return true
+    }
+    else {
+        if (selectedStartDate == null || selectedEndDate == null) {
+            console.log("Please select start and end date")
+            timeWindowErrMsg = "Please select start and end date"
+            return false
+        }
+        else {
+            if (selectedStartDate > selectedEndDate) {
+                console.log("Selected start date greater than end date")
+                timeWindowErrMsg = "Selected start date greater than end date"
+                return false
+            }
+            else {
+                return true
+            }
+        }
+    }
+}
 
 
 
@@ -314,6 +366,9 @@ function formatDate(date) {
 
 
 function fetchGetObservationsUrl(counterId, startDate, endDate) {
+    console.log("fetchGetObservationsUrl")
+    console.log("startDate " + startDate)
+    console.log("endDate " + endDate)
 
     let apiUrl = latest_obs_url + counterId
     const formattedStartDate = formatDate(startDate);
@@ -349,10 +404,25 @@ function removeSVG() {
 
 function displayNoDataError(errorDiv, showErr) {
 
+    let errMsg = "<p style='color: red;'>" + " No data received for this counter in the past month" + "</p>"
+    displayErrorInInput(errorDiv, showErr, errMsg)
+
+}
+
+function displayTimeWindowError(errorDiv, showErr, errMsg) {
+
+    let errhtml = "<p style='color: red;'>" + errMsg + "</p>"
+    displayErrorInInput(errorDiv, showErr, errhtml)
+
+}
+
+
+function displayErrorInInput(errorDiv, showErr, errorMessage) {
+
     // Display the error message in the specified div with id "errorDiv"
     if (errorDiv) {
         if (showErr) {
-            errorDiv.innerHTML = "<p style='color: red;'>" + " No data received for this counter in the past month" + "</p>";
+            errorDiv.innerHTML = errorMessage;
         }
         else {
             errorDiv.innerHTML = "";
@@ -362,90 +432,115 @@ function displayNoDataError(errorDiv, showErr) {
     }
 
 }
+
 function bringUpMeasurementsOverlay(feature) {
 
+    console.log("bringupmeasurementsoverlay")
+    var errorDiv = document.getElementById("errorDiv");
+    let isTimeWindowValid = validateTimeWIndowInput()
+    console.log("time window Valid" + isTimeWindowValid)
 
-    const counterInfoDiv = document.getElementById('counterInfoDiv');
-    counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+    if (!isTimeWindowValid) {
 
+        console.log("time window invalid")
+        displayTimeWindowError(errorDiv, true, timeWindowErrMsg)
 
-    console.log("show viz cards")
-    showVizCards(true)
-    removeSVG()
+    }
+    else {
 
-    //showVizLoadingSpinner("viz-day-spinner")
+        displayTimeWindowError(errorDiv, false, "")
 
-    showLoadingSpinner()
-
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const aMonthAgo = new Date(today);
-    aMonthAgo.setDate(today.getDate() - 30);
-
-    let urlWithParams = fetchGetObservationsUrl(feature.properties.id, aMonthAgo, tomorrow)
-
-    d3.csv(urlWithParams,
-        function (d) {
-
-            return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement, direction: d.direction }
-            //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
-        }).then(
-            // Now I can use this dataset:
-            function (data) {
-
-                hideLoadingSpinner()
-                console.log("csv read")
-                console.log("Number of rows:", data.length);
-
-                var errorDiv = document.getElementById("errorDiv");
-                if (data.length === 0) {
-                    showVizCards(false)
-                    displayNoDataError(errorDiv, true)
-
-                }
-                else {
-                    displayNoDataError(errorDiv, false)
-                    //hideVizLoadingSpinner("viz-day-spinner")
-                    //plotLineChart(data, "#viz-day")
-
-                    const thisHourData = filterPastData(data, 0, 1);
-                    console.log('Last 7 days:')
-                    console.log(thisHourData);
-                    plotLineChart(thisHourData, "#viz-hour")
+        const counterInfoDiv = document.getElementById('counterInfoDiv');
+        counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
 
 
 
-                    const todayData = filterPastData(data, 1, 0);
-                    console.log('Last 7 days:')
-                    console.log(todayData);
-                    plotLineChart(todayData, "#viz-day")
+        showVizCards(true)
+        removeSVG()
 
-                    // Filter for the last 7 days
+        //showVizLoadingSpinner("viz-day-spinner")
 
-                    const last7DaysData = filterPastData(data, 7, 0);
-                    console.log('Last 7 days:')
-                    console.log(last7DaysData);
-                    plotLineChart(last7DaysData, "#viz-week")
+        showLoadingSpinner()
 
-                    // Filter for the last 30 days
+        let urlWithParams = ""
+        if (isDefaultTimeWindow) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            const aMonthAgo = new Date(today);
+            aMonthAgo.setDate(today.getDate() - 30);
 
-                    const last30DaysData = filterPastData(data, 30, 0);
-                    console.log('Last 30 days:')
-                    console.log(last30DaysData);
-                    plotLineChart(last30DaysData, "#viz-month")
+            urlWithParams = fetchGetObservationsUrl(feature.properties.id, aMonthAgo, tomorrow)
 
-                    // // Filter for a year ago
+        }
+        else {
+            console.log("selected start date " + selectedStartDate)
+            console.log("selected end date " + selectedEndDate)
+            urlWithParams = fetchGetObservationsUrl(feature.properties.id, selectedStartDate, selectedEndDate)
+        }
 
-                    // const oneYearAgoData = filterLastXDaysData(data, 365);
-                    // console.log('One year ago:')
-                    // console.log(oneYearAgoData);
-                    // plotLineChart(oneYearAgoData, "#viz-year")
+        d3.csv(urlWithParams,
+            function (d) {
 
-                }
-            })
+                return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement, direction: d.direction }
+                //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
+            }).then(
+                // Now I can use this dataset:
+                function (data) {
+
+                    hideLoadingSpinner()
+                    console.log("csv read")
+                    console.log("Number of rows:", data.length);
 
 
+                    if (data.length === 0) {
+                        showVizCards(false)
+                        displayNoDataError(errorDiv, true)
+
+                    }
+                    else {
+                        displayNoDataError(errorDiv, false)
+                        //hideVizLoadingSpinner("viz-day-spinner")
+                        //plotLineChart(data, "#viz-day")
+
+                        const thisHourData = filterPastData(data, 0, 1);
+                        console.log('Last 7 days:')
+                        console.log(thisHourData);
+                        plotLineChart(thisHourData, "#viz-hour")
+
+
+
+                        const todayData = filterPastData(data, 1, 0);
+                        console.log('Last 7 days:')
+                        console.log(todayData);
+                        plotLineChart(todayData, "#viz-day")
+
+                        // Filter for the last 7 days
+
+                        const last7DaysData = filterPastData(data, 7, 0);
+                        console.log('Last 7 days:')
+                        console.log(last7DaysData);
+                        plotLineChart(last7DaysData, "#viz-week")
+
+                        // Filter for the last 30 days
+
+                        const last30DaysData = filterPastData(data, 30, 0);
+                        console.log('Last 30 days:')
+                        console.log(last30DaysData);
+                        plotLineChart(last30DaysData, "#viz-month")
+
+                        // // Filter for a year ago
+
+                        // const oneYearAgoData = filterLastXDaysData(data, 365);
+                        // console.log('One year ago:')
+                        // console.log(oneYearAgoData);
+                        // plotLineChart(oneYearAgoData, "#viz-year")
+
+                    }
+                })
+
+
+    }
 }
 
 
