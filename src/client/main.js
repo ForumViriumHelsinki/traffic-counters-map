@@ -146,7 +146,7 @@ function validateTimeWIndowInput() {
 
 
 
-function showVizCards(show) {
+function showDefaultVizCards(show) {
     // Get all elements with the class "viz"
     let vizcards = document.querySelectorAll('.viz');
     let display = 'none'
@@ -157,6 +157,19 @@ function showVizCards(show) {
         card.style.display = display
     });
 }
+
+function showCustomVizCard(show) {
+
+    let vizcard = document.getElementById('viz-custom');
+    let display = 'none'
+    if (show) {
+        display = 'block'
+    }
+
+    vizcard.style.display = display
+
+}
+
 
 
 
@@ -236,17 +249,159 @@ function filterTimeSeriesData(data, startTime, EndTime) {
     return filteredData
 }
 
+
+function plotNew(data, containerId) {
+
+    console.log("plotNew")
+
+    if (data.length !== 0) {
+        const allDirections = data.map(d => d.direction);
+        const directions = [...new Set(allDirections)];
+        console.log('Directions:', directions);
+
+        // Create a color scale based on the number of lines
+        const lineColorScale = d3.scaleOrdinal()
+            .domain(directions)
+            .range(['blue', 'green']);
+
+        // Create a color scale based on the number of lines
+        const scatterColorScale = d3.scaleOrdinal()
+            .domain(directions)
+            .range(['red', 'yellow']);
+
+        let speedData = [];
+        let countData = [];
+
+        // Iterate through unique directions using forEach
+        directions.forEach((direction, index) => {
+            console.log('Processing direction:', direction);
+
+            // Filter data for speed and count based on direction
+            let filteredSpeed = data.filter(item => item.typeOfMeasurement === 'speed' && item.direction === direction);
+            let filteredCount = data.filter(item => item.typeOfMeasurement === 'count' && item.direction === direction);
+
+            // Push filtered data into arrays
+            speedData.push({
+                direction: direction,
+                data: filteredSpeed
+            });
+
+            countData.push({
+                direction: direction,
+                data: filteredCount
+            });
+        });
+
+        console.log('Speed data:', speedData);
+        console.log('Count data:', countData);
+
+        // Set the dimensions and margins of the graph
+        var margin = { top: 5, right: 10, bottom: 50, left: 25 },
+            width = 290 - margin.left - margin.right,
+            height = 200 - margin.top - margin.bottom;
+
+        // Append the SVG object to the body of the page
+        var svg = d3.select(containerId)
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // Define scales and axes
+        const xScale = d3.scaleTime().range([0, width]);
+        const yScale = d3.scaleLinear().range([height, 0]);
+
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        // Set domains for scales based on data
+        xScale.domain(d3.extent(data, d => d.date));
+        yScale.domain([0, d3.max(data, d => Math.max(+d.value))]);
+
+        // Add lines to the chart
+
+
+        countData.forEach((lineData, index) => {
+            const line = d3.line()
+                .x(d => xScale(d.date))
+                .y(d => yScale(+d.value));
+
+                let class_name = 'line count-line ' + lineData.direction
+
+            svg.append('path')
+                .data([lineData.data])
+                .attr('class', 'line count-line')
+                .attr('d', line)
+                .attr("fill", "none")
+                .style('stroke', lineColorScale(lineData.direction));
+        });
+
+        // Add scatter points for speed data
+        speedData.forEach((scatterData, index) => {
+            console.log("speeddata")
+            // svg.selectAll(".dot")  // Use a class selector for the dots
+            //     .data(scatterData.data)
+            //     .enter().append("circle")
+            //     .attr("class", "dot")
+            //     .attr("r", 1)  // Set the radius of the dots
+            //     .attr("cx", d => xScale(d.date))
+            //     .attr("cy", d => yScale(+d.value))
+            //     .style('fill', scatterColorScale(scatterData.direction));
+
+            const line = d3.line()
+            .x(d => xScale(d.date))
+            .y(d => yScale(+d.value));
+
+            let class_name = 'line speed-line ' + scatterData.direction
+
+        svg.append('path')
+            .data([scatterData.data])
+            .attr('class', class_name)
+            .attr('d', line)
+            .attr("fill", "none")
+            .style('stroke', scatterColorScale(scatterData.direction));
+        });
+
+        // Add X and Y axes
+        svg.append('g')
+            .attr('class', 'x-axis')
+            .call(xAxis.ticks(4));
+
+        svg.append('g')
+            .attr('class', 'y-axis')
+            .call(yAxis);
+
+        // // Update legends outside D3
+        // const legendContainer = d3.select(containerId)
+        //     .append('div')
+        //     .attr('class', 'legend-container');
+
+        // const legends = legendContainer.selectAll('.legend-item')
+        //     .data(directions)
+        //     .enter()
+        //     .append('div')
+        //     .attr('class', 'legend-item');
+
+        // legends.append('div')
+        //     .attr('class', 'legend-color')
+        //     .style('background-color', d => colorScale(d));
+
+        // legends.append('div')
+        //     .text(d => d);
+    }
+}
+
 function plotLineChart(data, containerId) {
 
     // set the dimensions and margins of the graph
-    var margin = { top: 5, right: 10, bottom: 20, left: 25 },
+    var margin = { top: 5, right: 10, bottom: 50, left: 25 },
         width = 290 - margin.left - margin.right,
         height = 200 - margin.top - margin.bottom;
 
     //const svgSelection = d3.select('svg');
 
-    const speedData = data.filter(item => item.typeOfMeasurement === "speed")
-    const countData = data.filter(item => item.typeOfMeasurement === "count")
+
 
     // append the svg object to the body of the page
     var svg = d3.select(containerId)
@@ -280,77 +435,107 @@ function plotLineChart(data, containerId) {
 
     // Add Y axis
 
-    if (speedData.length > 0) {
-        // Add the line for "speed"
-        svg.append("path")
-            .datum(speedData)
-            .attr("fill", "none")
-            .attr("stroke", "steelblue")
-            .attr("stroke-width", 1.5)
-            .attr("d", d3.line()
-                .x(function (d) { return x(d.date) })
-                .y(function (d) { return y(+d.value) })
-            );
-    }
 
-    if (countData.length > 0) {
-        // Add the line for "count"
-        svg.append("path")
-            .datum(countData)
-            .attr("fill", "none")
-            .attr("stroke", "orange")
-            .attr("stroke-width", 1.5)
-            .attr("d", d3.line()
-                .x(function (d) { return x(d.date) })
-                .y(function (d) { return y(+d.value) })
-            );
-    }
+    // Extract the 'direction' column values
+    const allDirections = data.map(d => d.direction);
 
-    // // Add x-axis label
-    // svg.append('text')
-    //     .attr('class', 'x-axis-label')
-    //     .attr('text-anchor', 'middle') // Center the label
-    //     .attr('transform', `translate(${width / 2},${height + margin.bottom - 1})`)
-    //     .text('Date');
+    // Find unique values
+    const directions = [...new Set(allDirections)];
 
-    // Create legends
-    var legends = svg.append("g")
-        .attr("class", "legends")
-        .attr("transform", "translate(" + (width - 30) + "," + 0 + ")"); // Adjust the legend position
+    // Log the unique values
+    console.log(' Directions :', directions);
+    let colors = ["steelblue", "orange", "green", "red"]
 
-    // Legend for "speed" data
-    if (speedData.length > 0) {
-        legends.append("rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", 8)
-            .attr("height", 8)
-            .attr("fill", "steelblue");
+    // Iterate through unique direction using forEach
+    directions.forEach(direction => {
+        console.log('Processing directions:', direction);
 
-        legends.append("text")
-            .attr("x", 15)
-            .attr("y", 5)
-            .attr("dy", ".35em")
-            .style("font-size", "8px")
-            .text("Speed");
-    }
+        const speedData = data.filter(item => item.typeOfMeasurement === "speed" && item.direction === direction)
+        const countData = data.filter(item => item.typeOfMeasurement === "count" && item.direction === direction)
 
-    // Legend for "count" data
-    if (countData.length > 0) {
-        legends.append("rect")
-            .attr("x", 0)
-            .attr("y", 15)
-            .attr("width", 8)
-            .attr("height", 8)
-            .attr("fill", "orange");
 
-        legends.append("text")
-            .attr("x", 15)
-            .attr("y", 20)
-            .attr("dy", ".35em")
-            .style("font-size", "8px")
-            .text("Count");
-    }
+        if (speedData.length > 0) {
+            // Add the line for "speed"
+            svg.append("path")
+                .datum(speedData)
+                .attr("fill", "none")
+                .attr("stroke", colors[directions.indexOf(direction)])
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function (d) { return x(d.date) })
+                    .y(function (d) { return y(+d.value) })
+                );
+        }
+
+        if (countData.length > 0) {
+            // Add the line for "count"
+            svg.append("path")
+                .datum(countData)
+                .attr("fill", "none")
+                .attr("stroke", colors[directions.indexOf(direction) + 1])
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function (d) { return x(d.date) })
+                    .y(function (d) { return y(+d.value) })
+                );
+        }
+
+        // Create legends
+        var legend = svg.append("g")
+            .attr("class", "legends")
+            //.attr("transform", "translate(" + (width - 30) + "," + 0 + ")"); // Adjust the legend position
+            .attr('transform', (d, i) => `translate(${i * 120}, ${height + margin.bottom / 2})`);
+
+        legend.append('rect')
+            .attr('width', 10)
+            .attr('height', 10)
+            .attr('fill', (d, i) => colorScale(i)); // You can define your color scale
+
+        legend.append('text')
+            .attr('x', 15)
+            .attr('y', 5)
+            .text(d => d);
+
+
+        // Legend for "speed" data
+        if (speedData.length > 0) {
+            legends.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", 8)
+                .attr("height", 8)
+                .attr("fill", "steelblue");
+
+            legends.append("text")
+                .attr("x", 15)
+                .attr("y", 5)
+                .attr("dy", ".35em")
+                .style("font-size", "8px")
+                .text("Speed " + direction);
+        }
+
+        // Legend for "count" data
+        if (countData.length > 0) {
+            legends.append("rect")
+                .attr("x", 0)
+                .attr("y", 15)
+                .attr("width", 8)
+                .attr("height", 8)
+                .attr("fill", "orange");
+
+            legends.append("text")
+                .attr("x", 5)
+                .attr("y", 10)
+                .attr("dy", ".35em")
+                .style("font-size", "8px")
+                .text("Count " + direction);
+        }
+
+
+    });
+
+
+
 
 }
 
@@ -455,7 +640,7 @@ function bringUpMeasurementsOverlay(feature) {
 
 
 
-        showVizCards(true)
+        showDefaultVizCards(true)
         removeSVG()
 
         //showVizLoadingSpinner("viz-day-spinner")
@@ -479,10 +664,13 @@ function bringUpMeasurementsOverlay(feature) {
             urlWithParams = fetchGetObservationsUrl(feature.properties.id, selectedStartDate, selectedEndDate)
         }
 
+        let directions = []
         d3.csv(urlWithParams,
             function (d) {
 
-                return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: d.value, typeOfMeasurement: d.typeofmeasurement, direction: d.direction }
+
+
+                return { date: d3.timeParse('%Y-%m-%dT%H:%M:%S%Z')(d.datetime), value: +d.value, typeOfMeasurement: d.typeofmeasurement, direction: d.direction }
                 //return { date: d3.timeParse('%Y-%m-%d')(d.date), value: d.value }
             }).then(
                 // Now I can use this dataset:
@@ -494,7 +682,7 @@ function bringUpMeasurementsOverlay(feature) {
 
 
                     if (data.length === 0) {
-                        showVizCards(false)
+                        showDefaultVizCards(false)
                         displayNoDataError(errorDiv, true)
 
                     }
@@ -503,31 +691,34 @@ function bringUpMeasurementsOverlay(feature) {
                         //hideVizLoadingSpinner("viz-day-spinner")
                         //plotLineChart(data, "#viz-day")
 
+
+
+
                         const thisHourData = filterPastData(data, 0, 1);
                         console.log('Last 7 days:')
                         console.log(thisHourData);
-                        plotLineChart(thisHourData, "#viz-hour")
+                        plotNew(thisHourData, "#viz-hour")
 
 
 
                         const todayData = filterPastData(data, 1, 0);
                         console.log('Last 7 days:')
                         console.log(todayData);
-                        plotLineChart(todayData, "#viz-day")
+                        plotNew(todayData, "#viz-day")
 
                         // Filter for the last 7 days
 
                         const last7DaysData = filterPastData(data, 7, 0);
                         console.log('Last 7 days:')
                         console.log(last7DaysData);
-                        plotLineChart(last7DaysData, "#viz-week")
+                        plotNew(last7DaysData, "#viz-week")
 
                         // Filter for the last 30 days
 
                         const last30DaysData = filterPastData(data, 30, 0);
                         console.log('Last 30 days:')
                         console.log(last30DaysData);
-                        plotLineChart(last30DaysData, "#viz-month")
+                        plotNew(last30DaysData, "#viz-month")
 
                         // // Filter for a year ago
 
@@ -596,7 +787,7 @@ function loadGeojsonMap(geojsonData) {
 
 // Function to create the map
 function createMap(map_center_point) {
-    showVizCards(false)
+    showDefaultVizCards(false)
     map = L.map('map').setView(map_center_point, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

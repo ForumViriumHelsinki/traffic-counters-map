@@ -81,10 +81,10 @@ app.get('/api/observations-latest/:id', async (req, res) => {
             totalPages = Math.ceil((response.data["count"] / pagesize))
             console.log("total pages" + totalPages)
 
-            if (totalPages > 20) {
-                // until we optimise the visualization, we limit the number of pages to 100
-                totalPages = 20
-            }
+            // if (totalPages > 20) {
+            //     // until we optimise the visualization, we limit the number of pages to 100
+            //     totalPages = 20
+            // }
             queryParams["format"] = "csv"
             queryParams["pagesize"] = pagesize
             data = await fetchPaginatedData(url, queryParams, totalPages)
