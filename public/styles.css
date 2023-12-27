@@ -77,24 +77,29 @@ html {
     }
 }
 
-svg {
-    background-color: transparent; /* Make sure it's not set to black */
-}
-
+/* Style for legend container */
 .legend-container {
     display: flex;
-    flex-direction: column;
-    margin-left: 20px;
-}
+    justify-content: space-between;
+    margin-top: 10px;
+  }
 
-.legend-item {
+  /* Style for legend items */
+  .legend-item {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
-}
+    margin-right: 10px;
+  }
 
-.legend-color {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-}
+  /* Style for legend color */
+  .legend-color {
+    width: 20px;
+    height: 10px;
+    margin-right: 5px;
+  }
+
+  /* Style for legend text */
+  .legend-text {
+    font-size: 14px;
+    color: #333; /* Adjust text color as needed */
+  }

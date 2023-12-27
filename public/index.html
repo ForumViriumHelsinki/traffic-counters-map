@@ -16,13 +16,15 @@
         <div class="loading-spinner"></div>
         <p>Loading...</p>
     </div>
-    <div class="row mt-2 mx-2 rounded border p-1 mb-2">
-        <div class="col-auto">
-            <label for="timeSwitch">Show default time windows</label>
-            <input type="checkbox" id="timeSwitch" data-bootstrap-switch checked>
-        </div>
-        <div class="col-auto">
-            <div class="row align-items-center">
+    <div class="row">
+        <!-- Map on the Left -->
+        <div id="map" class="lmap col-md-6" style="height: 780px;"></div>
+        <!-- Container for Visualizations on the right -->
+
+
+
+        <div class="lmap col-md-6 d-flex flex-column" style="height: 800px;">
+            <div class="row align-items-center mt-2">
                 <div class="col-auto">
                     <label for="startDate">Start Date:</label>
                     <input type="date" id="startDate" name="startDate" required>
@@ -33,9 +35,6 @@
                 </div>
                 <!-- <span id="dateError" style="color: red;"></span> -->
             </div>
-        </div>
-        <div class="col-auto">
-            <!-- <p>Filter counters by source</p> -->
             <div class="checkbox ">
                 <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="ecocounter"
                         checked>EcoCounter
@@ -54,39 +53,78 @@
                 <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox" id="liva" checked>Liva
                 </label>
             </div>
-        </div>
-    </div>
-    <div class="row">
-        <!-- Map on the Left -->
-        <div id="map" class="lmap col-md-6" style="height: 780px;"></div>
-        <!-- Container for Visualizations on the right -->
-        <div class="lmap col-md-6 d-flex flex-column" style="height: 800px;">
-            <div class="row mt-2 mx-2">
-                <div class="card">
-                    <div class="card-body">
-                        <form id="counterIdForm">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="numericInput"
-                                            placeholder="Enter a counter ID" required>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-primary">Go</button>
-                                </div>
-                                <div class="error-message" id="errorMessage" style='color: red;'></div>
+            <div>
+
+                <form id="counterIdForm">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="numericInput"
+                                    placeholder="Enter a counter ID" required>
                             </div>
-                        </form>
-                        <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
-                        <div id="errorDiv"></div>
-                        <div id="counterInfoDiv" style='color: blue;'></div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Go</button>
+                        </div>
+                        <div class="error-message" id="errorMessage" style='color: red;'></div>
                     </div>
-                </div>
+                </form>
+                <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
+                <div id="errorDiv"></div>
+                <div id="counterInfoDiv" style='color: blue;'></div>
+
             </div>
 
-            <div id="legend-container" class="legend-container"></div>
-            <div id="customViz">
+            <div>
+                <p>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizHour" role="button"
+                        aria-expanded="false" aria-controls="multiCollapseVizHour">Last Hour</a>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizDay" role="button"
+                        aria-expanded="false" aria-controls="multiCollapseVizDay">Day</a>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizWeek" role="button"
+                        aria-expanded="false" aria-controls="multiCollapseVizWeek"> Week</a>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizMonth" role="button"
+                        aria-expanded="false" aria-controls="multiCollapseVizMonth">Month</a>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizCustom" role="button"
+                        aria-expanded="false" aria-controls="multiCollapseVizCustom">Custom Time Window</a>
+
+                </p>
+
+
+                <div class="collapse multi-collapse" id="multiCollapseVizHour">
+                    <div class="card card-body" id="viz-hour">
+                        viz hour
+                    </div>
+                </div>
+
+
+                <div class="collapse multi-collapse" id="multiCollapseVizDay">
+                    <div class="card card-body" id="viz-day">
+                        viz day
+                    </div>
+                </div>
+
+
+                <div class="collapse multi-collapse" id="multiCollapseVizWeek">
+                    <div class="card card-body" id="viz-week">
+                        viz week
+                    </div>
+                </div>
+
+                <div class="collapse multi-collapse" id="multiCollapseVizMonth">
+                    <div class="card card-body" id="viz-month">
+                        viz month
+                    </div>
+                </div>
+
+                <div class="collapse multi-collapse" id="multiCollapseVizCustom">
+                    <div class="card card-body" id="viz-custom">
+                        viz custom
+                    </div>
+                </div>
+
+            </div>
+            <!-- <div id="customViz">
                 <div class="d-flex flex-fill flex-row mt-2">
                     <div class="card hidden viz">
                         <div class="card-body">
@@ -98,10 +136,10 @@
 
                 </div>
 
-            </div>
-            <div id="defaultViz">
+            </div> -->
+            <!-- <div id="defaultViz">
 
-                <!-- Top Half of Right Split (2 columns) -->
+                Top Half of Right Split (2 columns)
                 <div class="d-flex flex-fill flex-row mt-2">
                     <div class="col-md-6 d-flex flex-column">
                         <div class="card hidden viz">
@@ -122,7 +160,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Bottom Half of Right Split (2 columns) -->
+                Bottom Half of Right Split (2 columns)
                 <div class="d-flex flex-fill flex-row mt-2">
                     <div class="col-md-6 d-flex flex-column">
                         <div class="card hidden viz">
@@ -144,7 +182,7 @@
                     </div>
                 </div>
 
-            </div>
+            </div> -->
         </div>
     </div>
     <script src="dist/bundle.js"></script>

@@ -24,6 +24,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     console.log("dom loaded")
     // Wait for the DOM to be fully loaded
+
+
+    // Get the current date
+    const currentDate = new Date();
+    const formattedEndDate = currentDate.toISOString().slice(0, 10);// Format the date as "YYYY-MM-DD"
+    document.getElementById('endDate').value = formattedEndDate;
+
+    let yearAgo = new Date(currentDate);
+    yearAgo.setDate(currentDate.getDate() - 365);
+    const formattedStartDate = yearAgo.toISOString().slice(0, 10);// Format the date as "YYYY-MM-DD"
+    document.getElementById('startDate').value = formattedStartDate;
+
+
+
+
+
+
     const counterIdForm = document.getElementById('counterIdForm');
     const numericInput = document.getElementById('numericInput');
     const errorMessage = document.getElementById('errorMessage');
@@ -105,14 +122,35 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Selected end date:', selectedEndDate);
     });
 
-    var timeWindowSWitch = document.getElementById('timeSwitch');
-    timeWindowSWitch.addEventListener('click', function () {
-        // Handle the date change event here
-        isDefaultTimeWindow = !isDefaultTimeWindow
-        console.log('Selected default time window: ', isDefaultTimeWindow)
+    // var timeWindowSWitch = document.getElementById('timeSwitch');
+    // timeWindowSWitch.addEventListener('click', function () {
+    //     // Handle the date change event here
+    //     isDefaultTimeWindow = !isDefaultTimeWindow
+    //     console.log('Selected default time window: ', isDefaultTimeWindow)
 
 
 
+    // });
+
+
+    // Add click event listeners to each button
+    const buttons = document.querySelectorAll('.btn');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const targetCollapse = document.getElementById(targetId);
+
+            // Collapse all other elements except the one that is being clicked
+            document.querySelectorAll('.collapse').forEach(collapse => {
+                if (collapse !== targetCollapse) {
+                    collapse.classList.remove('show');
+                }
+            });
+
+            // Toggle the clicked element
+            targetCollapse.classList.toggle('show');
+        });
     });
 
 
@@ -296,9 +334,9 @@ function plotNew(data, containerId) {
         console.log('Count data:', countData);
 
         // Set the dimensions and margins of the graph
-        var margin = { top: 5, right: 10, bottom: 50, left: 25 },
-            width = 290 - margin.left - margin.right,
-            height = 200 - margin.top - margin.bottom;
+        var margin = { top: 5, right: 10, bottom: 100, left: 25 },
+            width = 600 - margin.left - margin.right,
+            height = 450 - margin.top - margin.bottom;
 
         // Append the SVG object to the body of the page
         var svg = d3.select(containerId)
@@ -327,7 +365,7 @@ function plotNew(data, containerId) {
                 .x(d => xScale(d.date))
                 .y(d => yScale(+d.value));
 
-                let class_name = 'line count-line ' + lineData.direction
+            let class_name = 'line count-line ' + lineData.direction
 
             svg.append('path')
                 .data([lineData.data])
@@ -350,45 +388,64 @@ function plotNew(data, containerId) {
             //     .style('fill', scatterColorScale(scatterData.direction));
 
             const line = d3.line()
-            .x(d => xScale(d.date))
-            .y(d => yScale(+d.value));
+                .x(d => xScale(d.date))
+                .y(d => yScale(+d.value));
 
             let class_name = 'line speed-line ' + scatterData.direction
 
-        svg.append('path')
-            .data([scatterData.data])
-            .attr('class', class_name)
-            .attr('d', line)
-            .attr("fill", "none")
-            .style('stroke', scatterColorScale(scatterData.direction));
+            svg.append('path')
+                .data([scatterData.data])
+                .attr('class', class_name)
+                .attr('d', line)
+                .attr("fill", "none")
+                .style('stroke', scatterColorScale(scatterData.direction));
         });
 
         // Add X and Y axes
         svg.append('g')
             .attr('class', 'x-axis')
-            .call(xAxis.ticks(4));
+            .call(xAxis.ticks(8));
 
         svg.append('g')
             .attr('class', 'y-axis')
             .call(yAxis);
 
-        // // Update legends outside D3
-        // const legendContainer = d3.select(containerId)
-        //     .append('div')
-        //     .attr('class', 'legend-container');
 
-        // const legends = legendContainer.selectAll('.legend-item')
-        //     .data(directions)
-        //     .enter()
-        //     .append('div')
-        //     .attr('class', 'legend-item');
 
-        // legends.append('div')
-        //     .attr('class', 'legend-color')
-        //     .style('background-color', d => colorScale(d));
+        // Create a legend container
+        var legendContainer = d3.select(containerId)
+            .append('div')
+            .attr('class', 'legend-container');
 
-        // legends.append('div')
-        //     .text(d => d);
+        // Update legends for count data
+        const countLegends = legendContainer.selectAll('.count-legend')
+            .data(countData)
+            .enter()
+            .append('div')
+            .attr('class', 'legend-item count-legend');
+
+        countLegends.append('div')
+            .attr('class', 'legend-color')
+            .style('background-color', d => lineColorScale(d.direction));
+
+        countLegends.append('div')
+            .attr('class', 'legend-text')
+            .text(d => d.direction + ' count');
+
+        // Update legends for speed data
+        const speedLegends = legendContainer.selectAll('.speed-legend')
+            .data(speedData)
+            .enter()
+            .append('div')
+            .attr('class', 'legend-item speed-legend');
+
+        speedLegends.append('div')
+            .attr('class', 'legend-color')
+            .style('background-color', d => scatterColorScale(d.direction));
+
+        speedLegends.append('div')
+            .attr('class', 'legend-text')
+            .text(d => d.direction + ' speed');
     }
 }
 
@@ -640,7 +697,7 @@ function bringUpMeasurementsOverlay(feature) {
 
 
 
-        showDefaultVizCards(true)
+        // showDefaultVizCards(true)
         removeSVG()
 
         //showVizLoadingSpinner("viz-day-spinner")
@@ -682,7 +739,7 @@ function bringUpMeasurementsOverlay(feature) {
 
 
                     if (data.length === 0) {
-                        showDefaultVizCards(false)
+                        //showDefaultVizCards(false)
                         displayNoDataError(errorDiv, true)
 
                     }
@@ -787,7 +844,7 @@ function loadGeojsonMap(geojsonData) {
 
 // Function to create the map
 function createMap(map_center_point) {
-    showDefaultVizCards(false)
+    //showDefaultVizCards(false)
     map = L.map('map').setView(map_center_point, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
