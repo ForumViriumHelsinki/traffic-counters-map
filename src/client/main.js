@@ -378,7 +378,7 @@ function bringUpVisualisation(feature) {
 }
 
 // Call the function to create the map
-createMap(map_center);
+createMap(map_center, 12);
 showLoadingSpinner()
 try{
     geojsonData = await fetchCountersData()
