@@ -8,7 +8,7 @@ import { plotNew, removeSVG } from './plots';
 import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate } from './api-data';
 import { createMap, loadGeojsonMap, panMap, removeGeojsonLayer } from './maps';
 import { displayTimeWindowError, displayError } from './errors';
-import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson';
+import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson-modifier';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
