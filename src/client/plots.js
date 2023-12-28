@@ -47,9 +47,9 @@ export function plotNew(data, divId) {
 
 
         // Set the dimensions and margins of the graph
-        var margin = { top: 5, right: 10, bottom: 100, left: 25 },
+        var margin = { top: 5, right: 10, bottom: 10, left: 25 },
             width = 600 - margin.left - margin.right,
-            height = 450 - margin.top - margin.bottom;
+            height = 350 - margin.top - margin.bottom;
 
         // Append the SVG object to the body of the page
         var svg = d3.select(containerId)
@@ -165,7 +165,7 @@ export function plotNew(data, divId) {
 
 export function removeSVG() {
     // Check if the SVG element exists and remove if yes
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
         const svgSelection = d3.select('svg');
         if (!svgSelection.empty()) {
             // Remove the SVG element

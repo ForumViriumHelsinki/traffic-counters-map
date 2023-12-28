@@ -1,9 +1,12 @@
 
 import * as L from 'leaflet';
-
+import { addCounterClickEventListeners, addMapClickEventListener } from './main';
 
 let map
 let geojsonLayer;
+
+
+
 
 // Function to create the map
 export function createMap(map_center_point) {
@@ -12,6 +15,9 @@ export function createMap(map_center_point) {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
+
+    addMapClickEventListener(map)
+
 }
 
 export function panMap(geometry) {
@@ -35,8 +41,8 @@ export function loadGeojsonMap(geojsonData) {
             // Join the HTML strings to form a complete HTML string
             const htmlString = htmlStrings.join('');
 
-            const dateForm = "dateForm" + feature.properties.id
-            let datepicker_form = '<form id="' + dateForm + '"> \
+            const dateFormId = "dateForm" + feature.properties.id
+            let datepicker_form = '<form id="' + dateFormId + '"> \
             <button type="submit">Show Observations</button> \
             </form>'
 
@@ -45,25 +51,10 @@ export function loadGeojsonMap(geojsonData) {
             //bind popup to layer
             layer.bindPopup(popupContent)
 
-            // in the on click event of marker, add click event listener to button in popup
-            layer.on('click', function (event) {
-                //event.preventDefault(); L.DomEvent.stopPropagation(event);
-                console.log("onclick marker")
-                const form = document.getElementById(dateForm);
-                // Add a click event to the form
-                form.addEventListener('submit', function (event) {
-                    // Handle the button click event here
-                    // open observations in another tab
-                    event.preventDefault();
-                    console.log("onsubmit")
-
-
-                    bringUpVisualisation(feature)
-                });
-
-            });
+            addCounterClickEventListeners(layer, feature, dateFormId)
         }
     }
+
     const filteredGeojson = JSON.parse(JSON.stringify(geojsonData));
     filteredGeojson.features = filteredGeojson.features.filter((item) => item.properties.show_on_map);
 

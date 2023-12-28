@@ -23,11 +23,17 @@ let timeWindowErrMsg = ''
 
 
 function showVisualisationCards(show) {
-    if (show ){
-        document.getElementById("allViz").style.display = "block";
+    console.log(show)
+    if (show === true) {
+        document.getElementById("vizOverlay").style.display = "flex";
+        document.getElementById("multiCollapseVizCustom").classList.add('show');
     }
-    else{
-        document.getElementById("allViz").style.display = "none";
+    else {
+        console.log("hide viz cards")
+        document.getElementById("vizOverlay").style.display = "none";
+        displaySelectedCounterInfo(null, false)
+
+
     }
 }
 
@@ -73,12 +79,10 @@ function setupCounterIdForm() {
             if (!/^\d+$/.test(numericInput.value)) {
                 errorMessage.textContent = 'Enter a valid numeric counter ID.';
 
-            } else if(!validateTimeWIndowInput()){
+            } else if (!validateTimeWIndowInput()) {
                 errorMessage.textContent = timeWindowErrMsg
             }
-            else
-
-            {
+            else {
                 errorMessage.textContent = ''; // Clear error message if input is valid
                 const counterId = Number(numericInput.value);
                 const counterInfo = geojsonData.features.filter(feature => feature.properties.id === counterId)[0];
@@ -105,6 +109,36 @@ function setupCounterIdForm() {
     }
 }
 
+export function addCounterClickEventListeners(layer, feature, dateFormId) {
+
+    layer.on('click', function (event) {
+        //event.preventDefault(); L.DomEvent.stopPropagation(event);
+        console.log("onclick marker")
+        const form = document.getElementById(dateFormId);
+        // Add a click event to the form
+        form.addEventListener('submit', function (event) {
+            // Handle the button click event here
+            // open observations in another tab
+            event.preventDefault();
+            console.log("onsubmit")
+
+
+            bringUpVisualisation(feature)
+        });
+
+    });
+
+}
+
+export function addMapClickEventListener(map) {
+
+    map.on('click', function (e) {
+
+        console.log("map clicked")
+        showVisualisationCards(false)
+    });
+
+}
 
 function setUpVizCollapsibleBtnListeners() {
 
@@ -166,34 +200,7 @@ function validateTimeWIndowInput() {
 }
 
 
-// function setUpTimeInputListeners() {
 
-//     // Get the date input element
-//     var startDate = document.getElementById('startDate');
-
-//     // Add event listener for the 'change' event
-//     startDate.addEventListener('change', function (e) {
-//         // Handle the date change event here
-//         selectedStartDate = new Date(e.target.value);
-//         validateTimeWIndowInput()
-//         document.getElementById("dateError").innerHTML = timeWindowErrMsg;
-//     });
-
-//     // Get the date input element
-//     var endDate = document.getElementById('endDate');
-
-//     // Add event listener for the 'change' event
-//     endDate.addEventListener('change', function (e) {
-//         // Handle the date change event here
-//         selectedEndDate = new Date(e.target.value);
-//         validateTimeWIndowInput()
-//         document.getElementById("dateError").innerHTML = timeWindowErrMsg;
-//     });
-
-//     // if new valid input -> recreate viz
-
-
-// }
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -201,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupCounterIdForm()
     setUpVizCollapsibleBtnListeners()
     setUpDefaultTimeWindow()
-    setUpTimeInputListeners()
+    //setUpTimeInputListeners()
 
 });
 
@@ -233,6 +240,7 @@ function filterAndPlotDataUptoNow(data, noOfDaysAgo, noOfHoursAgo, containerId, 
         displayError(document.getElementById(containerId), true, NoDataMsg)
     }
     else {
+        displayError(document.getElementById(containerId), false, "")
         plotNew(filteredData, containerId)
     }
 
@@ -246,12 +254,25 @@ function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, No
         displayError(document.getElementById(containerId), true, NoDataMsg)
     }
     else {
+        displayError(document.getElementById(containerId), false, "")
         plotNew(filteredData, containerId)
     }
 
 }
 
+function displaySelectedCounterInfo(show, feature) {
 
+        const counterInfoDiv = document.getElementById('counterInfoDiv');
+        if (show){
+            counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+        }
+        else
+        {
+            counterInfoDiv.textContent = ''
+        }
+
+
+}
 function bringUpVisualisation(feature) {
 
     console.log("bringUpVisualisation")
@@ -265,9 +286,7 @@ function bringUpVisualisation(feature) {
 
         displayTimeWindowError(errorDiv, false, "")
 
-    const counterInfoDiv = document.getElementById('counterInfoDiv');
-    counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
-
+    displaySelectedCounterInfo(true, feature)
     let urlWithParams = ""
 
     //dates for default viz
@@ -285,34 +304,23 @@ function bringUpVisualisation(feature) {
 
     fetchCsvObservations(urlWithParams).then(
 
-        // Now I can use this dataset:
+
         function (data) {
 
             console.log("csv read  - Number of rows:", data.length);
-            if (data.length === 0) {
-                //showDefaultVizCards(false)
-                displayNoDataError(errorDiv, true)
+
+            filterAndPlotDataUptoNow(data, 0, 1, "viz-hour", "No data received for this counter in the past hour")
+            filterAndPlotDataUptoNow(data, 1, 0, "viz-day", "No data received for this counter today")
+            filterAndPlotDataUptoNow(data, 7, 0, "viz-week", "No data received for this counter in the past week")
+            filterAndPlotDataUptoNow(data, 30, 0, "viz-month", "No data received for this counter in the past month");
+
+            if (isTimeWindowWithinDefault) {
+                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
                 hideLoadingSpinner()
-
+                showVisualisationCards(true)
             }
-            else {
-                displayNoDataError(errorDiv, false)
 
 
-
-                filterAndPlotDataUptoNow(data, 0, 1, "viz-hour", "No data received for this counter in the past hour")
-                filterAndPlotDataUptoNow(data, 1, 0, "viz-day", "No data received for this counter today")
-                filterAndPlotDataUptoNow(data, 7, 0, "viz-week", "No data received for this counter in the past week")
-                filterAndPlotDataUptoNow(data, 30, 0, "viz-month", "No data received for this counter in the past month");
-
-                if (isTimeWindowWithinDefault) {
-                    console.log("plotting custom viz")
-                    filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
-                    hideLoadingSpinner()
-                    showVisualisationCards(true)
-                }
-
-            }
         });
 
     if (isTimeWindowWithinDefault === false) {
@@ -323,23 +331,9 @@ function bringUpVisualisation(feature) {
 
         fetchCsvObservations(urlWithParams).then(
             function (data) {
-
-                console.log("csv read  - Number of rows:", data.length);
-                if (data.length === 0) {
-                    displayNoDataError(errorDiv, true)
-                    hideLoadingSpinner()
-
-                }
-                else {
-                    displayNoDataError(errorDiv, false)
-
-                    console.log("plotting custom viz")
-                    filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
-                    hideLoadingSpinner()
-                    showVisualisationCards(true)
-
-
-                }
+                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
+                hideLoadingSpinner()
+                showVisualisationCards(true)
             });
     }
 }

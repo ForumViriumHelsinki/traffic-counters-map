@@ -50,14 +50,31 @@ html {
     position: fixed;
     top: 0;
     left: 0;
-    width: 95%;
+    width: 94%;
+    background: rgba(170, 159, 159, 0.7);
+    /* Semi-transparent black background */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: rgb(18, 12, 12);
+    margin-left: 3%;
+    z-index: 2;
+}
+
+#vizOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40%;
     background: rgba(233, 221, 221, 0.7);
     /* Semi-transparent black background */
     justify-content: center;
     align-items: center;
     flex-direction: column;
     color: rgb(17, 16, 16);
-    margin-left: 21px;
+    margin-left: 50%;
+    margin-top: 10%;
     z-index: 2;
 }
 

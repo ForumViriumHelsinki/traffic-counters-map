@@ -40,72 +40,36 @@
             <div class="align-items-center">
 
 
-            <form id="counterIdForm">
-                <!-- <div class="input-group"> -->
+                <form id="counterIdForm">
 
 
 
-                <input type="text" id="numericInput" placeholder="Enter a counter ID" required>
+                    <input type="text" id="numericInput" placeholder="Enter a counter ID" required>
 
 
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" name="startDate" required>
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" name="endDate" required>
-                <!-- <span id="dateError" style="color: red;"></span> -->
-                <span class="error-message" id="errorMessage" style='color: red;'></span>
-                <button type="submit" class="btn btn-primary">Go</button>
-
-            </form>
-            <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
-            <div id="errorDiv"></div>
-
-
-</div>
-        </div>
-    </div>
-    <!-- <div class="row"> -->
-    <!-- Map on the Left -->
-    <div id="map" class="lmap" style="height: 780px;"></div>
-    <!-- Container for Visualizations on the right -->
-
-
-    <!--
-        <div class="lmap col-md-6 d-flex flex-column" style="height: 800px;">
-            <div class="row align-items-center mt-2">
-                <div class="col-auto">
                     <label for="startDate">Start Date:</label>
                     <input type="date" id="startDate" name="startDate" required>
-                </div>
-                <div class="col-auto">
                     <label for="endDate">End Date:</label>
                     <input type="date" id="endDate" name="endDate" required>
-                </div>
-                <span id="dateError" style="color: red;"></span>
+                    <!-- <span id="dateError" style="color: red;"></span> -->
+                    <span class="error-message" id="errorMessage" style='color: red;'></span>
+                    <button type="submit" class="btn btn-primary">Go</button>
+
+                </form>
+                <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
+                <div id="errorDiv" style='color: red;'></div>
+                <div id="counterInfoDiv" style='color: blue;'></div>
+
+
             </div>
+        </div>
+    </div>
 
-            <form id="counterIdForm">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="numericInput" placeholder="Enter a counter ID"
-                                required>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Go</button>
-                    </div>
-                    <div class="error-message" id="errorMessage" style='color: red;'></div>
-                </div>
-            </form>
-            <p style="font-size: 8px;">Enter Counter ID or Select a counter from the map</p>
-            <div id="errorDiv"></div>
-            <div id="counterInfoDiv" style='color: blue;'></div>
+    <div id="map" class="lmap" style="height: 780px;"></div>
 
-        </div> -->
+    <div id="vizOverlay">
+        <div id="allViz" class="align-items-center">
 
-    <div id="allViz">
-        <p>
             <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizHour" role="button"
                 aria-expanded="false" aria-controls="multiCollapseVizHour">Last Hour</a>
             <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizDay" role="button"
@@ -115,43 +79,43 @@
             <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizMonth" role="button"
                 aria-expanded="false" aria-controls="multiCollapseVizMonth">Month</a>
             <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizCustom" role="button"
-                aria-expanded="false" aria-controls="multiCollapseVizCustom">Custom Time Window</a>
-
-        </p>
+                aria-expanded="true" aria-controls="multiCollapseVizCustom">Selected Time Window</a>
 
 
-        <div class="collapse multi-collapse" id="multiCollapseVizHour">
-            <div class="card card-body" id="viz-hour">
-                viz hour
+
+
+            <div class="collapse multi-collapse" id="multiCollapseVizHour">
+                <div class="card card-body" id="viz-hour">
+                </div>
             </div>
-        </div>
 
 
-        <div class="collapse multi-collapse" id="multiCollapseVizDay">
-            <div class="card card-body" id="viz-day">
-                viz day
+            <div class="collapse multi-collapse" id="multiCollapseVizDay">
+                <div class="card card-body" id="viz-day">
+
+                </div>
             </div>
-        </div>
 
 
-        <div class="collapse multi-collapse" id="multiCollapseVizWeek">
-            <div class="card card-body" id="viz-week">
-                viz week
+            <div class="collapse multi-collapse" id="multiCollapseVizWeek">
+                <div class="card card-body" id="viz-week">
+
+                </div>
             </div>
-        </div>
 
-        <div class="collapse multi-collapse" id="multiCollapseVizMonth">
-            <div class="card card-body" id="viz-month">
-                viz month
+            <div class="collapse multi-collapse" id="multiCollapseVizMonth">
+                <div class="card card-body" id="viz-month">
+
+                </div>
             </div>
-        </div>
 
-        <div class="collapse multi-collapse" id="multiCollapseVizCustom">
-            <div class="card card-body" id="viz-custom">
-                viz custom
+            <div class="collapse show multi-collapse " id="multiCollapseVizCustom">
+                <div class="card card-body" id="viz-custom">
+
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
 
     <!-- </div> -->
