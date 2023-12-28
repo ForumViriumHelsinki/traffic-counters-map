@@ -5,9 +5,9 @@ import * as L from 'leaflet';
 import * as d3 from 'd3';
 import { showLoadingSpinner, hideLoadingSpinner } from './loadingOverlay';
 import { plotNew, removeSVG } from './plots';
-import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate } from './apiData';
+import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate } from './api-data';
 import { createMap, loadGeojsonMap, panMap, removeGeojsonLayer } from './maps';
-import { displayNoDataError, displayTimeWindowError, displayError } from './errors';
+import { displayTimeWindowError, displayError } from './errors';
 import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
