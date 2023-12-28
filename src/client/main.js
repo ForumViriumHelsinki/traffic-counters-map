@@ -15,7 +15,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { info } from 'sass';
 
 
-const map_center = [60.18, 24.93]; // Helsinki coordinates
+const mapCenter = [60.18, 24.93]; // Helsinki coordinates
 
 let geojsonData; // Define the variable to store geojson data
 let selectedStartDate = null
@@ -57,6 +57,11 @@ function setupCheckboxListeners() {
 
         });
     });
+}
+
+function setCounterIdInForm(id){
+    const numericInput = document.getElementById('numericInput');
+    numericInput.value = id
 }
 
 function setupCounterIdForm() {
@@ -115,6 +120,7 @@ export function addCounterClickEventListeners(layer, feature, dateFormId) {
     layer.on('click', function (event) {
         //event.preventDefault(); L.DomEvent.stopPropagation(event);
         console.log("onclick marker")
+        setCounterIdInForm(feature.properties.id)
         const form = document.getElementById(dateFormId);
         // Add a click event to the form
         form.addEventListener('submit', function (event) {
@@ -315,6 +321,7 @@ function bringUpVisualisation(feature) {
         displayTimeWindowError(errorDiv, false, "")
 
     displaySelectedCounterInfo(true, feature)
+    setCounterIdInForm(feature.properties.id)
     let urlWithParams = ""
 
     //dates for default viz
@@ -378,7 +385,7 @@ function bringUpVisualisation(feature) {
 }
 
 // Call the function to create the map
-createMap(map_center, 12);
+createMap(mapCenter, 12);
 showLoadingSpinner()
 try{
     geojsonData = await fetchCountersData()

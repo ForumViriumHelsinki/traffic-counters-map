@@ -163,6 +163,10 @@ export function plotNew(data, divId) {
 }
 
 
+/**
+ * function used to remove SVG elements from the DOM before appending new ones for new visualizations
+ */
+
 export function removeSVG() {
     // Check if the SVG element exists and remove if yes
     for (let i = 0; i < 6; i++) {
