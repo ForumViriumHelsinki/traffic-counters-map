@@ -1,18 +1,18 @@
 // main.js
 
 // Import Leaflet and D3.js
-import * as L from 'leaflet';
-import * as d3 from 'd3';
+// import * as L from 'leaflet';
+// import * as d3 from 'd3';
 import { showLoadingSpinner, hideLoadingSpinner } from './loadingOverlay';
 import { plotNew, removeSVG } from './plots';
-import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate } from './api-data';
+import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate, fetchTimeframeData } from './api-data';
 import { createMap, loadGeojsonMap, panMap, removeGeojsonLayer } from './maps';
 import { displayTimeWindowError, displayError } from './errors';
 import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson-modifier';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { info } from 'sass';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+// import { info } from 'sass';
 
 
 const mapCenter = [60.18, 24.93]; // Helsinki coordinates
@@ -59,7 +59,7 @@ function setupCheckboxListeners() {
     });
 }
 
-function setCounterIdInForm(id){
+function setCounterIdInForm(id) {
     const numericInput = document.getElementById('numericInput');
     numericInput.value = id
 }
@@ -92,6 +92,11 @@ function setupCounterIdForm() {
                 errorMessage.textContent = ''; // Clear error message if input is valid
                 const counterId = Number(numericInput.value);
                 const counterInfo = geojsonData.features.filter(feature => feature.properties.id === counterId)[0];
+                if (counterInfo == null || counterInfo == undefined) {
+                    errorDiv = document.getElementById("errorDiv");
+                    displayError(errorDiv, true, "Counter with id " + counterId + " not found")
+                    return
+                }
                 // Get all elements with the class "filter-checkboxes"
                 const checkboxes = document.querySelectorAll('.filter-checkbox');
                 // Add a click event listener to each checkbox
@@ -105,6 +110,7 @@ function setupCounterIdForm() {
                 loadGeojsonMap(geojsonData);
                 panMap(counterInfo.geometry)
                 removeSVG()
+
                 bringUpVisualisation(counterInfo)
                 numericInput.value = '';
 
@@ -128,7 +134,6 @@ export function addCounterClickEventListeners(layer, feature, dateFormId) {
             // open observations in another tab
             event.preventDefault();
             console.log("onsubmit")
-
 
             bringUpVisualisation(feature)
         });
@@ -298,39 +303,65 @@ function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, ti
 
 function setCloseContainerBtnListener() {
 
-        const closeContainerBtn = document.getElementById('closeContainerBtn');
-        closeContainerBtn.addEventListener('click', function () {
-            console.log("closeContainerBtn clicked")
-            showVisualisationCards(false)
-        });
+    const closeContainerBtn = document.getElementById('closeContainerBtn');
+    closeContainerBtn.addEventListener('click', function () {
+        console.log("closeContainerBtn clicked")
+        showVisualisationCards(false)
+    });
 }
 
-function displaySelectedCounterInfo(show, feature) {
+async function displaySelectedCounterInfo(show, feature) {
+
 
     const counterInfoDiv = document.getElementById('counterInfoDiv');
     if (show) {
-        counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+        const infoText = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+        counterInfoDiv.innerHTML = '<p>' + infoText + '</p>'
+        try {
+            console.log("fetching time frames")
+            const data = await fetchTimeframeData(feature.properties.id)
+            console.log(data)
+            if (data.firstTimeStamp || data.lastTimeStamp) {
+                console.log("timeframes: " + data.firstTimeStamp + '-' + data.lastTimeStamp)
+                let timeframeText = '   , Data received from ' + data.firstTimeStamp.substring(0, 10) + ' to ' + data.lastTimeStamp.substring(0, 10)
+                counterInfoDiv.innerHTML = '<p>' + infoText + timeframeText + '</p>'
+            }
+            else{
+                let errorDiv = document.getElementById("errorDiv");
+                displayError(errorDiv, true, "data collection timeline not available")
+            }
+        }
+        catch (error) {
+            console.error(error);
+            var errorDiv = document.getElementById("errorDiv");
+            displayError(errorDiv, true, "Error fetching Counters")
+
+        }
     }
     else {
-        counterInfoDiv.textContent = ''
+        counterInfoDiv.innerHTML = ''
     }
+
+
 
 
 }
 function bringUpVisualisation(feature) {
 
     console.log("bringUpVisualisation")
+
     var errorDiv = document.getElementById("errorDiv");
     let isTimeWindowValid = validateTimeWIndowInput()
 
     showLoadingSpinner()
     showVisualisationCards(false)
 
-    if (isTimeWindowValid)
+    // if (isTimeWindowValid)
 
-        displayTimeWindowError(errorDiv, false, "")
+    //     displayTimeWindowError(errorDiv, false, "")
 
     displaySelectedCounterInfo(true, feature)
+    //displaySelectedCounterInfo(true, feature)
     setCounterIdInForm(feature.properties.id)
     let urlWithParams = ""
 
@@ -397,10 +428,10 @@ function bringUpVisualisation(feature) {
 // Call the function to create the map
 createMap(mapCenter, 12);
 showLoadingSpinner()
-try{
+try {
     geojsonData = await fetchCountersData()
 }
-catch(error){
+catch (error) {
     console.error(error);
     var errorDiv = document.getElementById("errorDiv");
     displayError(errorDiv, true, "Error fetching Counters")

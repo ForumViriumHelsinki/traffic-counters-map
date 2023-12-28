@@ -6,7 +6,8 @@
 import * as d3 from "d3";
 
 const counterUrl = "/api/counters";
-const observationsUrl = "/api/observations-latest/";
+const observationsUrl = "/api/observations/";
+const observationsTimeframeUrl = "/api/observations/timeframe/";
 
 /**
  * Fetches CSV observations data from the API.
@@ -108,3 +109,17 @@ export function fetchGetObservationsUrl(counterId, startDate, endDate) {
 
   return urlWithParams;
 }
+
+
+export async function fetchTimeframeData(counterId) {
+    try {
+        console.log("fetching timeframe data");
+        const response = await fetch(observationsTimeframeUrl + counterId);
+        const timeframeData = await response.json();
+
+        return timeframeData;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        throw error;
+    }
+    }

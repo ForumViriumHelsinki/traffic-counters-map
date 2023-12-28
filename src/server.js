@@ -17,8 +17,22 @@ app.use(express.static('public'));
 app.use(cors());
 app.use(express.json());
 
-counter_url = 'https://lidotiku.api.dev.hel.ninja/api/counters';
+const counterUrl = 'https://lidotiku.api.dev.hel.ninja/api/counters';
+const observationsUrl = 'https://lidotiku.api.dev.hel.ninja/api/observations';
 
+
+
+async function getFirstTimestampFromResponse(url, queryParams) {
+    const queryString = new URLSearchParams(queryParams).toString();
+    const urlWithQuery = `${url}?${queryString}`;
+    console.log("urlWithQuery " + urlWithQuery)
+    const response = await axios.get(urlWithQuery);
+    if (response.data && response.data["count"] != 0) {
+        return response.data["results"][0]["datetime"]
+    } else {
+        return ""
+    }
+}
 
 // Function to fetch paginated data
 async function fetchPaginatedData(url, queryParams, totalPages) {
@@ -28,7 +42,7 @@ async function fetchPaginatedData(url, queryParams, totalPages) {
         queryParams["page"] = page
         const queryString = new URLSearchParams(queryParams).toString();
         const urlWithQuery = `${url}?${queryString}`;
-        console.log("urlWithQuery " + urlWithQuery)
+        //console.log("urlWithQuery " + urlWithQuery)
         const response = await fetch(urlWithQuery);
         const csvData = await response.text();
 
@@ -50,7 +64,7 @@ app.get('/api/counters', async (req, res) => {
     console.log("counters api called")
     try {
         const queryParams = { format: 'json' };
-        const url = counter_url;
+        const url = counterUrl;
         console.log(url)
         const response = await axios.get(url);
         res.json(response.data);
@@ -60,7 +74,31 @@ app.get('/api/counters', async (req, res) => {
     }
 });
 
-app.get('/api/observations-latest/:id', async (req, res) => {
+app.get('/api/observations/timeframe/:id', async (req, res) => {
+    console.log("timeframe api called")
+    try {
+
+        //datetime desc
+        const queryParams = { format: 'json', order:'-datetime', counter: req.params.id };
+        let lastTimeStamp = await getFirstTimestampFromResponse(observationsUrl, queryParams)
+        let firstTimeStamp = ""
+        if (lastTimeStamp != "") {
+            //datetime asc
+            queryParams["order"] = 'datetime'
+            firstTimeStamp = await getFirstTimestampFromResponse(observationsUrl, queryParams)
+        }
+
+        console.log(firstTimeStamp)
+        console.log(lastTimeStamp)
+        res.json({ "firstTimeStamp": firstTimeStamp, "lastTimeStamp": lastTimeStamp });
+    } catch (error) {
+        console.error('Error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch data' });
+    }
+});
+
+
+app.get('/api/observations/:id', async (req, res) => {
     try {
         // format: 'json'
         const queryParams = { order: '-datetime', counter: req.params.id };
@@ -69,7 +107,7 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         console.log(req.params.id)
         queryParams["format"] = "json"
 
-        const url = 'https://lidotiku.api.dev.hel.ninja/api/observations'
+        const url = observationsUrl
         // Convert the query parameters object into a URL-encoded string
         const queryString = new URLSearchParams(queryParams).toString();
         const urlWithQuery = `${url}?${queryString}`;
@@ -80,11 +118,6 @@ app.get('/api/observations-latest/:id', async (req, res) => {
         if (response.data && response.data["count"] != 0) {
             totalPages = Math.ceil((response.data["count"] / pagesize))
             console.log("total pages" + totalPages)
-
-            // if (totalPages > 20) {
-            //     // until we optimise the visualization, we limit the number of pages to 100
-            //     totalPages = 20
-            // }
             queryParams["format"] = "csv"
             queryParams["pagesize"] = pagesize
             data = await fetchPaginatedData(url, queryParams, totalPages)
