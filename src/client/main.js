@@ -5,13 +5,14 @@ import * as L from 'leaflet';
 import * as d3 from 'd3';
 import { showLoadingSpinner, hideLoadingSpinner } from './loadingOverlay';
 import { plotNew, removeSVG } from './plots';
-import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations } from './apiData';
+import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate } from './apiData';
 import { createMap, loadGeojsonMap, panMap, removeGeojsonLayer } from './maps';
 import { displayNoDataError, displayTimeWindowError, displayError } from './errors';
 import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { info } from 'sass';
 
 
 const map_center = [60.18, 24.93]; // Helsinki coordinates
@@ -260,29 +261,29 @@ function filterTimeSeriesData(data, startTime, EndTime) {
     return filteredData
 }
 
-function filterAndPlotDataUptoNow(data, noOfDaysAgo, noOfHoursAgo, containerId, NoDataMsg) {
+function filterAndPlotDataUptoNow(data, noOfDaysAgo, noOfHoursAgo, containerId, timeWindoText) {
 
     const filteredData = filterPastData(data, noOfDaysAgo, noOfHoursAgo);
-    console.log(filteredData)
+    const infoDiv = document.getElementById(containerId)
     if (filteredData.length == 0) {
-        displayError(document.getElementById(containerId), true, NoDataMsg)
+        infoDiv.innerHTML = "<p>   No Data received in the Time Frame: " + timeWindoText + "</p>"
     }
     else {
-        displayError(document.getElementById(containerId), false, "")
+        infoDiv.innerHTML = "<p>   Data received in the Time Frame: " + timeWindoText + "</p>"
         plotNew(filteredData, containerId)
     }
 
 }
 
-function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, NoDataMsg) {
+function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, timeWindoText) {
 
     const filteredData = filterTimeSeriesData(data, startTime, endTime);
-    console.log(filteredData)
+    const infoDiv = document.getElementById(containerId)
     if (filteredData.length == 0) {
-        displayError(document.getElementById(containerId), true, NoDataMsg)
+        infoDiv.innerHTML = "<p>   No Data received in the Time Frame: " + timeWindoText + "</p>"
     }
     else {
-        displayError(document.getElementById(containerId), false, "")
+        infoDiv.innerHTML = "<p>   Data received in the Time Frame: " + timeWindoText + "</p>"
         plotNew(filteredData, containerId)
     }
 
@@ -337,13 +338,13 @@ function bringUpVisualisation(feature) {
 
             console.log("csv read  - Number of rows:", data.length);
 
-            filterAndPlotDataUptoNow(data, 0, 1, "viz-hour", "No data received for this counter in the past hour")
-            filterAndPlotDataUptoNow(data, 1, 0, "viz-day", "No data received for this counter today")
-            filterAndPlotDataUptoNow(data, 7, 0, "viz-week", "No data received for this counter in the past week")
-            filterAndPlotDataUptoNow(data, 30, 0, "viz-month", "No data received for this counter in the past month");
+            filterAndPlotDataUptoNow(data, 0, 1, "viz-hour", "past hour")
+            filterAndPlotDataUptoNow(data, 1, 0, "viz-day", "today")
+            filterAndPlotDataUptoNow(data, 7, 0, "viz-week", "past week")
+            filterAndPlotDataUptoNow(data, 30, 0, "viz-month", "past month");
 
             if (isTimeWindowWithinDefault) {
-                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
+                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", formatDate(selectedStartDate) + " - " + formatDate(selectedEndDate))
                 hideLoadingSpinner()
                 showVisualisationCards(true)
             }
@@ -364,7 +365,7 @@ function bringUpVisualisation(feature) {
 
         fetchCsvObservations(urlWithParams).then(
             function (data) {
-                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
+                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", formatDate(selectedStartDate) + " - " + formatDate(selectedEndDate))
                 hideLoadingSpinner()
                 showVisualisationCards(true)
             }).catch((error) => {

@@ -19,7 +19,7 @@ export function plotNew(data, divId) {
         // Create a color scale based on the number of lines
         const scatterColorScale = d3.scaleOrdinal()
             .domain(directions)
-            .range(['red', 'yellow']);
+            .range(['red', 'orange']);
 
         let speedData = [];
         let countData = [];
@@ -48,7 +48,7 @@ export function plotNew(data, divId) {
 
         // Set the dimensions and margins of the graph
         var margin = { top: 5, right: 10, bottom: 10, left: 25 },
-            width = 600 - margin.left - margin.right,
+            width = 460 - margin.left - margin.right,
             height = 350 - margin.top - margin.bottom;
 
         // Append the SVG object to the body of the page
