@@ -244,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setUpVizCollapsibleBtnListeners()
     setUpDefaultTimeWindow()
     setUpTimeInputListeners()
+    setCloseContainerBtnListener()
 
 });
 
@@ -293,6 +294,15 @@ function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, ti
         plotNew(filteredData, containerId)
     }
 
+}
+
+function setCloseContainerBtnListener() {
+
+        const closeContainerBtn = document.getElementById('closeContainerBtn');
+        closeContainerBtn.addEventListener('click', function () {
+            console.log("closeContainerBtn clicked")
+            showVisualisationCards(false)
+        });
 }
 
 function displaySelectedCounterInfo(show, feature) {
