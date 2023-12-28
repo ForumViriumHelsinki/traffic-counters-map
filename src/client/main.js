@@ -329,7 +329,7 @@ function bringUpVisualisation(feature) {
 
     urlWithParams = fetchGetObservationsUrl(feature.properties.id, aMonthAgo, tomorrow)
 
-    try{
+
     fetchCsvObservations(urlWithParams).then(
 
 
@@ -349,40 +349,45 @@ function bringUpVisualisation(feature) {
             }
 
 
+        }).catch((error) => {
+            console.log(error)
+            console.error('Error loading CSV file:', error);
+            displayError(errorDiv, true, "Error loading CSV file")
+            hideLoadingSpinner()
         });
-
-    }
-    catch (error) {
-        console.error('Error loading CSV file:', error);
-        displayError(errorDiv, true, "Error loading CSV file")
-        hideLoadingSpinner()
-    }
 
     if (isTimeWindowWithinDefault === false) {
 
         console.log(" custom outside default ")
         urlWithParams = fetchGetObservationsUrl(feature.properties.id, selectedStartDate, selectedEndDate)
 
-try{
+
         fetchCsvObservations(urlWithParams).then(
             function (data) {
                 filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", "No data received for this counter in the selected time window")
                 hideLoadingSpinner()
                 showVisualisationCards(true)
+            }).catch((error) => {
+
+                console.error('Error fetching CSV file:', error);
+                displayError(errorDiv, true, "Error fetching Observations")
+                hideLoadingSpinner()
             });
-        }
-        catch (error) {
-            console.error('Error loading CSV file:', error);
-            displayError(errorDiv, true, "Error loading CSV file")
-            hideLoadingSpinner()
-        }
     }
 }
 
 // Call the function to create the map
 createMap(map_center);
 showLoadingSpinner()
-geojsonData = await fetchCountersData()
+try{
+    geojsonData = await fetchCountersData()
+}
+catch(error){
+    console.error(error);
+    var errorDiv = document.getElementById("errorDiv");
+    displayError(errorDiv, true, "Error fetching Counters")
+
+}
 hideLoadingSpinner()
 loadGeojsonMap(geojsonData);
 
