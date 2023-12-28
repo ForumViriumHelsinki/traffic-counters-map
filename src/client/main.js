@@ -180,6 +180,34 @@ function setUpDefaultTimeWindow() {
 
 }
 
+function setUpTimeInputListeners() {
+
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    const errorMessage = document.getElementById('errorMessage');
+
+    startDate.addEventListener('change', function () {
+        selectedStartDate = new Date(startDate.value);
+        if (!validateTimeWIndowInput()) {
+            errorMessage.textContent = timeWindowErrMsg
+        }
+        else {
+            errorMessage.textContent = ''
+        }
+    });
+
+    endDate.addEventListener('change', function () {
+        selectedEndDate = new Date(endDate.value);
+        if (!validateTimeWIndowInput()) {
+            errorMessage.textContent = timeWindowErrMsg
+        }
+        else {
+            errorMessage.textContent = ''
+        }
+    });
+
+}
+
 function validateTimeWIndowInput() {
 
     timeWindowErrMsg = ""
@@ -208,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupCounterIdForm()
     setUpVizCollapsibleBtnListeners()
     setUpDefaultTimeWindow()
-    //setUpTimeInputListeners()
+    setUpTimeInputListeners()
 
 });
 
@@ -262,14 +290,13 @@ function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, No
 
 function displaySelectedCounterInfo(show, feature) {
 
-        const counterInfoDiv = document.getElementById('counterInfoDiv');
-        if (show){
-            counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
-        }
-        else
-        {
-            counterInfoDiv.textContent = ''
-        }
+    const counterInfoDiv = document.getElementById('counterInfoDiv');
+    if (show) {
+        counterInfoDiv.textContent = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+    }
+    else {
+        counterInfoDiv.textContent = ''
+    }
 
 
 }
