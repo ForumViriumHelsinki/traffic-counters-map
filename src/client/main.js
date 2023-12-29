@@ -1,26 +1,21 @@
 // main.js
 
-// Import Leaflet and D3.js
-// import * as L from 'leaflet';
-// import * as d3 from 'd3';
 import { showLoadingSpinner, hideLoadingSpinner } from './loadingOverlay';
 import { plotNew, removeSVG } from './plots';
 import { fetchCountersData, fetchGetObservationsUrl, fetchCsvObservations, formatDate, fetchTimeframeData } from './api-data';
-import { createMap, loadGeojsonMap, panMap, removeGeojsonLayer } from './maps';
-import { displayTimeWindowError, displayError } from './errors';
+import { createMap, loadGeojsonMap, panMap, ReloadGeojsonMap } from './maps';
+import { displayError, clearError, displayCounterInfo, clearCounterInfo } from './info-err-display';
 import { updateGeojsonWithCounterIdSelection, updateGeojsonWithCheckboxSelection } from './geojson-modifier';
+import { validateTimeWIndowInput, setUpDefaultTimeWindow, setUpTimeInputListeners, getSelectedTimeWindow } from './time-input';
+import { getAllCheckboxes, uncheckAllCheckboxes } from './checkboxes';
 
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-// import { info } from 'sass';
+
 
 
 const mapCenter = [60.18, 24.93]; // Helsinki coordinates
 
 let geojsonData; // Define the variable to store geojson data
-let selectedStartDate = null
-let selectedEndDate = null
-let timeWindowErrMsg = ''
+
 
 
 function showVisualisationCards(show) {
@@ -32,9 +27,7 @@ function showVisualisationCards(show) {
     else {
         console.log("hide viz cards")
         document.getElementById("vizOverlay").style.display = "none";
-        displaySelectedCounterInfo(null, false)
-
-
+        clearCounterInfo()
     }
 }
 
@@ -42,24 +35,23 @@ function showVisualisationCards(show) {
 function setupCheckboxListeners() {
     // Add event listeners to checkboxes
 
-
     // Get all elements with the class "filter-checkboxes"
-    const checkboxes = document.querySelectorAll('.filter-checkbox');
+    const checkboxes = getAllCheckboxes();
     // Add a click event listener to each checkbox
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('click', function () {
             const clickedId = checkbox.id;
+
             //Update geojson data based on the checkbox selection
             geojsonData = updateGeojsonWithCheckboxSelection(geojsonData, checkbox);
             // Clear the map and load updated geojson data
-            removeGeojsonLayer()
-            loadGeojsonMap(geojsonData);
+            ReloadGeojsonMap(geojsonData);
 
         });
     });
 }
 
-function setCounterIdInForm(id) {
+function setCounterIdToInputField(id) {
     const numericInput = document.getElementById('numericInput');
     numericInput.value = id
 }
@@ -76,43 +68,35 @@ function setupCounterIdForm() {
     if (counterIdForm) {
 
         counterIdForm.addEventListener('submit', function (event) {
-            // Your validation logic here
-            // Check if the input value is a number
-            selectedStartDate = new Date(startDate.value);
-            selectedEndDate = new Date(endDate.value);
 
             event.preventDefault(); // Prevent form submission
             if (!/^\d+$/.test(numericInput.value)) {
                 errorMessage.textContent = 'Enter a valid numeric counter ID.';
 
             } else if (!validateTimeWIndowInput()) {
-                errorMessage.textContent = timeWindowErrMsg
+                // check if time window is valid
+                return
             }
             else {
+                // counter id is valid and time window is valid
                 errorMessage.textContent = ''; // Clear error message if input is valid
                 const counterId = Number(numericInput.value);
                 const counterInfo = geojsonData.features.filter(feature => feature.properties.id === counterId)[0];
                 if (counterInfo == null || counterInfo == undefined) {
                     errorDiv = document.getElementById("errorDiv");
-                    displayError(errorDiv, true, "Counter with id " + counterId + " not found")
+                    displayError("Counter with id " + counterId + " not found")
                     return
                 }
-                // Get all elements with the class "filter-checkboxes"
-                const checkboxes = document.querySelectorAll('.filter-checkbox');
-                // Add a click event listener to each checkbox
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = false
-                });
+
+                uncheckAllCheckboxes()
 
                 geojsonData = updateGeojsonWithCounterIdSelection(geojsonData, counterId);
                 // Clear the map and load updated geojson data
-                removeGeojsonLayer()
-                loadGeojsonMap(geojsonData);
+
+                ReloadGeojsonMap(geojsonData);
                 panMap(counterInfo.geometry)
                 removeSVG()
-
                 bringUpVisualisation(counterInfo)
-                numericInput.value = '';
 
             }
 
@@ -121,13 +105,14 @@ function setupCounterIdForm() {
     }
 }
 
-export function addCounterClickEventListeners(layer, feature, dateFormId) {
+export function addCounterClickEventListeners(layer, feature, formId) {
 
     layer.on('click', function (event) {
         //event.preventDefault(); L.DomEvent.stopPropagation(event);
         console.log("onclick marker")
-        setCounterIdInForm(feature.properties.id)
-        const form = document.getElementById(dateFormId);
+
+        setCounterIdToInputField(feature.properties.id)
+        const form = document.getElementById(formId);
         // Add a click event to the form
         form.addEventListener('submit', function (event) {
             // Handle the button click event here
@@ -175,70 +160,6 @@ function setUpVizCollapsibleBtnListeners() {
     });
 }
 
-function setUpDefaultTimeWindow() {
-
-    // Get the current date
-    const currentDate = new Date();
-    const formattedEndDate = currentDate.toISOString().slice(0, 10);// Format the date as "YYYY-MM-DD"
-    document.getElementById('endDate').value = formattedEndDate;
-
-    let yearAgo = new Date(currentDate);
-    yearAgo.setDate(currentDate.getDate() - 60);
-    const formattedStartDate = yearAgo.toISOString().slice(0, 10);// Format the date as "YYYY-MM-DD"
-    document.getElementById('startDate').value = formattedStartDate;
-
-    selectedEndDate = currentDate
-    selectedStartDate = yearAgo
-
-}
-
-function setUpTimeInputListeners() {
-
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    const errorMessage = document.getElementById('errorMessage');
-
-    startDate.addEventListener('change', function () {
-        selectedStartDate = new Date(startDate.value);
-        if (!validateTimeWIndowInput()) {
-            errorMessage.textContent = timeWindowErrMsg
-        }
-        else {
-            errorMessage.textContent = ''
-        }
-    });
-
-    endDate.addEventListener('change', function () {
-        selectedEndDate = new Date(endDate.value);
-        if (!validateTimeWIndowInput()) {
-            errorMessage.textContent = timeWindowErrMsg
-        }
-        else {
-            errorMessage.textContent = ''
-        }
-    });
-
-}
-
-function validateTimeWIndowInput() {
-
-    timeWindowErrMsg = ""
-    if (selectedStartDate == null || selectedEndDate == null) {
-        timeWindowErrMsg = "Please select start and end date"
-        return false
-    }
-    else {
-        if (selectedStartDate > selectedEndDate) {
-            timeWindowErrMsg = "Selected start date greater than end date"
-            return false
-        }
-        else {
-            return true
-        }
-    }
-
-}
-
 
 
 
@@ -276,27 +197,30 @@ function filterTimeSeriesData(data, startTime, EndTime) {
 function filterAndPlotDataUptoNow(data, noOfDaysAgo, noOfHoursAgo, containerId, timeWindoText) {
 
     const filteredData = filterPastData(data, noOfDaysAgo, noOfHoursAgo);
-    const infoDiv = document.getElementById(containerId)
-    if (filteredData.length == 0) {
-        infoDiv.innerHTML = "<p>   No Data received in the Time Frame: " + timeWindoText + "</p>"
-    }
-    else {
-        infoDiv.innerHTML = "<p>   Data received in the Time Frame: " + timeWindoText + "</p>"
-        plotNew(filteredData, containerId)
-    }
+    plotFilteredData(filteredData, containerId, timeWindoText)
+
 
 }
 
-function filterAndPlotDataInTimeWindow(data, startTime, endTime, containerId, timeWindoText) {
+function filterAndPlotDataInTimeWindow(data, startDate, endDate, containerId, timeWindoText) {
 
-    const filteredData = filterTimeSeriesData(data, startTime, endTime);
+    //convert enddate to enddate +1 because for the api the enddate is not inclusive
+    const newEndDate = endDate.setDate(endDate.getDate() + 1);
+
+    const filteredData = filterTimeSeriesData(data, startDate, newEndDate);
+    plotFilteredData(filteredData, containerId, timeWindoText)
+
+
+}
+
+function plotFilteredData(data, containerId, timeWindoText) {
     const infoDiv = document.getElementById(containerId)
-    if (filteredData.length == 0) {
+    if (data.length == 0) {
         infoDiv.innerHTML = "<p>   No Data received in the Time Frame: " + timeWindoText + "</p>"
     }
     else {
         infoDiv.innerHTML = "<p>   Data received in the Time Frame: " + timeWindoText + "</p>"
-        plotNew(filteredData, containerId)
+        plotNew(data, containerId)
     }
 
 }
@@ -310,59 +234,45 @@ function setCloseContainerBtnListener() {
     });
 }
 
-async function displaySelectedCounterInfo(show, feature) {
+async function displaySelectedCounterInfo(feature) {
 
-
-    const counterInfoDiv = document.getElementById('counterInfoDiv');
-    if (show) {
-        const infoText = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
-        counterInfoDiv.innerHTML = '<p>' + infoText + '</p>'
-        try {
-            console.log("fetching time frames")
-            const data = await fetchTimeframeData(feature.properties.id)
-            console.log(data)
-            if (data.firstTimeStamp || data.lastTimeStamp) {
-                console.log("timeframes: " + data.firstTimeStamp + '-' + data.lastTimeStamp)
-                let timeframeText = '   , Data received from ' + data.firstTimeStamp.substring(0, 10) + ' to ' + data.lastTimeStamp.substring(0, 10)
-                counterInfoDiv.innerHTML = '<p>' + infoText + timeframeText + '</p>'
-            }
-            else{
-                let errorDiv = document.getElementById("errorDiv");
-                displayError(errorDiv, true, "data collection timeline not available")
-            }
-        }
-        catch (error) {
-            console.error(error);
-            var errorDiv = document.getElementById("errorDiv");
-            displayError(errorDiv, true, "Error fetching Counters")
+    clearError()
+    const infoText = 'Selected Counter Info :  id:' + feature.properties.id + ', name:' + feature.properties.name + ', source:' + feature.properties.source
+    displayCounterInfo('<p>' + infoText + '</p>')
+    try {
+        console.log("fetching time frames")
+        const data = await fetchTimeframeData(feature.properties.id)
+        console.log(data)
+        if (data.firstTimeStamp || data.lastTimeStamp) {
+            console.log("timeframes: " + data.firstTimeStamp + '-' + data.lastTimeStamp)
+            let timeframeText = '   , Data received from ' + data.firstTimeStamp.substring(0, 10) + ' to ' + data.lastTimeStamp.substring(0, 10)
+            displayCounterInfo('<p>' + infoText + timeframeText + '</p>')
 
         }
+        else {
+            displayError("data collection timeline not available")
+        }
     }
-    else {
-        counterInfoDiv.innerHTML = ''
+    catch (error) {
+        console.error(error);
+        displayError("Error fetching Counters")
+
     }
-
-
-
-
 }
+
 function bringUpVisualisation(feature) {
 
     console.log("bringUpVisualisation")
 
-    var errorDiv = document.getElementById("errorDiv");
-    let isTimeWindowValid = validateTimeWIndowInput()
+    const selectedTimeWindow = getSelectedTimeWindow()
+
+
 
     showLoadingSpinner()
     showVisualisationCards(false)
 
-    // if (isTimeWindowValid)
-
-    //     displayTimeWindowError(errorDiv, false, "")
-
-    displaySelectedCounterInfo(true, feature)
-    //displaySelectedCounterInfo(true, feature)
-    setCounterIdInForm(feature.properties.id)
+    displaySelectedCounterInfo(feature)
+    setCounterIdToInputField(feature.properties.id)
     let urlWithParams = ""
 
     //dates for default viz
@@ -372,7 +282,7 @@ function bringUpVisualisation(feature) {
     const aMonthAgo = new Date(today);
     aMonthAgo.setDate(today.getDate() - 30);
 
-    const isTimeWindowWithinDefault = (selectedEndDate <= tomorrow && selectedStartDate >= aMonthAgo)
+    const isTimeWindowWithinDefault = (selectedTimeWindow.endDate <= tomorrow && selectedTimeWindow.startDate >= aMonthAgo)
     console.log("isTimeWindowWithinDefault" + isTimeWindowWithinDefault)
 
 
@@ -392,7 +302,8 @@ function bringUpVisualisation(feature) {
             filterAndPlotDataUptoNow(data, 30, 0, "viz-month", "past month");
 
             if (isTimeWindowWithinDefault) {
-                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", formatDate(selectedStartDate) + " - " + formatDate(selectedEndDate))
+
+                filterAndPlotDataInTimeWindow(data, selectedTimeWindow.startDate, selectedTimeWindow.endDate, "viz-custom", formatDate(selectedTimeWindow.startDate) + " - " + formatDate(selectedTimeWindow.endDate))
                 hideLoadingSpinner()
                 showVisualisationCards(true)
             }
@@ -401,25 +312,25 @@ function bringUpVisualisation(feature) {
         }).catch((error) => {
             console.log(error)
             console.error('Error loading CSV file:', error);
-            displayError(errorDiv, true, "Error loading CSV file")
+            displayError("Error loading CSV file")
             hideLoadingSpinner()
         });
 
     if (isTimeWindowWithinDefault === false) {
 
         console.log(" custom outside default ")
-        urlWithParams = fetchGetObservationsUrl(feature.properties.id, selectedStartDate, selectedEndDate)
+        urlWithParams = fetchGetObservationsUrl(feature.properties.id, selectedTimeWindow.startDate, selectedTimeWindow.endDate)
 
 
         fetchCsvObservations(urlWithParams).then(
             function (data) {
-                filterAndPlotDataInTimeWindow(data, selectedStartDate, selectedEndDate, "viz-custom", formatDate(selectedStartDate) + " - " + formatDate(selectedEndDate))
+                filterAndPlotDataInTimeWindow(data, selectedTimeWindow.startDate, selectedTimeWindow.endDate, "viz-custom", formatDate(selectedTimeWindow.startDate) + " - " + formatDate(selectedTimeWindow.endDate))
                 hideLoadingSpinner()
                 showVisualisationCards(true)
             }).catch((error) => {
 
                 console.error('Error fetching CSV file:', error);
-                displayError(errorDiv, true, "Error fetching Observations")
+                displayError("Error fetching Observations")
                 hideLoadingSpinner()
             });
     }
@@ -433,8 +344,8 @@ try {
 }
 catch (error) {
     console.error(error);
-    var errorDiv = document.getElementById("errorDiv");
-    displayError(errorDiv, true, "Error fetching Counters")
+
+    displayError("Error fetching Counters")
 
 }
 hideLoadingSpinner()

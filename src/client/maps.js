@@ -36,11 +36,16 @@ export function panMap(geometry) {
 }
 
 /**
- * removes the exisiting geojson layer from the map
+ * removes the exisiting geojson layer from the map and loads map with the new geojson data
+ * @param {GeoJSON} geojsonData
  */
-export function removeGeojsonLayer() {
+export function ReloadGeojsonMap(geojsonData) {
   map.removeLayer(geojsonLayer);
+  loadGeojsonMap(geojsonData)
+
 }
+
+
 
 /**
  * Adds the geojson data to the map. Each Point is a marker on the map. Popup is added to each marker with the counter data.
