@@ -1,4 +1,5 @@
 import { clearCounterInfo } from "./info-err-load-display";
+import { debugLog } from "./utils";
 
 /**
  * shows up one clicked visualisation card and hides all other cards
@@ -32,7 +33,7 @@ export function setUpVizCollapsibleBtnListeners() {
 export function setCloseContainerBtnListener() {
   const closeContainerBtn = document.getElementById("closeContainerBtn");
   closeContainerBtn.addEventListener("click", function () {
-    console.log("closeContainerBtn clicked");
+    debugLog("closeContainerBtn clicked");
     showVisualisationCards(false);
     clearCounterInfo();
   });
@@ -43,7 +44,7 @@ export function setCloseContainerBtnListener() {
  * @param {*} show
  */
 export function showVisualisationCards(show) {
-  console.log(show);
+  debugLog(show);
   if (show === true) {
     document.getElementById("vizOverlay").style.display = "flex";
     document.getElementById("multiCollapseVizCustom").classList.add("show");

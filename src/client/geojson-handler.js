@@ -3,6 +3,7 @@
  * @module geojson-handler
  */
 
+import { debugLog } from "./utils";
 /**
  * Updates geojson data with checkbox selection:
  * goes through all the features in geojson data and updates the show_on_map property to true if the source property matches the checkbox id
@@ -13,7 +14,7 @@
  *
  */
 export function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
-  console.log("update geojson Data after checkbox selection");
+  debugLog("update geojson Data after checkbox selection");
   let source;
   geojsonData.features = geojsonData.features.map((item) => {
     source = item.properties.source.toLowerCase();
@@ -35,7 +36,7 @@ export function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
  * @returns {GeoJSON} GeoJSON data with updated show_on_map property.
  */
 export function updateGeojsonWithCounterIdSelection(geojsonData, counterId) {
-  console.log("update geojson data after counter id input");
+  debugLog("update geojson data after counter id input");
 
   geojsonData.features = geojsonData.features.map((item) => {
     let id = item.properties.id;

@@ -20,6 +20,12 @@ app.use(express.json());
 const counterUrl = "https://lidotiku.api.dev.hel.ninja/api/counters";
 const observationsUrl = "https://lidotiku.api.dev.hel.ninja/api/observations";
 
+/**
+ * function to get the first timestamp from an ordered response
+ * @param {*} url
+ * @param {*} queryParams
+ * @returns
+ */
 async function getFirstTimestampFromResponse(url, queryParams) {
   const queryString = new URLSearchParams(queryParams).toString();
   const urlWithQuery = `${url}?${queryString}`;
@@ -39,7 +45,13 @@ async function getFirstTimestampFromResponse(url, queryParams) {
   }
 }
 
-// Function to fetch paginated data
+/**
+ * function to get paginated data from an api
+ * @param {*} url
+ * @param {*} queryParams
+ * @param {*} totalPages
+ * @returns
+ */
 async function fetchPaginatedData(url, queryParams, totalPages) {
   const dataPromises = [];
 
@@ -63,7 +75,9 @@ async function fetchPaginatedData(url, queryParams, totalPages) {
   return Promise.all(dataPromises);
 }
 
-// Define a route for fetching counters data
+/**
+ * route to get counters data from an api
+ */
 app.get("/api/counters", async (req, res) => {
   console.log("counters api called");
   try {
@@ -78,8 +92,11 @@ app.get("/api/counters", async (req, res) => {
   }
 });
 
+/**
+ * route to get timeframe data from an api
+ * achieves this by getting the first timestamp from a descending ordered response and ascending ordered response
+ */
 app.get("/api/observations/timeframe/:id", async (req, res) => {
-  console.log("timeframe api called");
   try {
     //datetime desc
     const queryParams = {
@@ -92,7 +109,7 @@ app.get("/api/observations/timeframe/:id", async (req, res) => {
       observationsUrl,
       queryParams,
     );
-    console.log(response);
+    // console.log(response);
     let firstTimeStamp = "";
     let lastTimeStamp = "";
     if (response.message !== "success") {
@@ -106,7 +123,7 @@ app.get("/api/observations/timeframe/:id", async (req, res) => {
         observationsUrl,
         queryParams,
       );
-      console.log(response);
+      //   console.log(response);
       if (response.message !== "success") {
         res.status(200).json({ message: response.message });
         return;
@@ -115,35 +132,34 @@ app.get("/api/observations/timeframe/:id", async (req, res) => {
       }
     }
 
-    console.log(firstTimeStamp);
-    console.log(lastTimeStamp);
-    res
-      .status(200)
-      .json({
-        message: "success",
-        firstTimeStamp: firstTimeStamp,
-        lastTimeStamp: lastTimeStamp,
-      });
+    // console.log(firstTimeStamp);
+    // console.log(lastTimeStamp);
+    res.status(200).json({
+      message: "success",
+      firstTimeStamp: firstTimeStamp,
+      lastTimeStamp: lastTimeStamp,
+    });
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Failed to fetch data" });
   }
 });
 
+/**
+ * route to get observations data from an api
+ */
 app.get("/api/observations/:id", async (req, res) => {
   try {
     // format: 'json'
     const queryParams = { order: "-datetime", counter: req.params.id };
     queryParams["start_date"] = req.query.startDate;
     queryParams["end_date"] = req.query.endDate;
-    console.log(req.params.id);
     queryParams["format"] = "json";
 
     const url = observationsUrl;
     // Convert the query parameters object into a URL-encoded string
     const queryString = new URLSearchParams(queryParams).toString();
     const urlWithQuery = `${url}?${queryString}`;
-    console.log("urlWithQuery " + urlWithQuery);
     const response = await axios.get(urlWithQuery);
     //res.json(response.data);
     pagesize = 1000;

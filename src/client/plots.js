@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import { debugLog } from "./utils";
 
 /**
  * plots multi line chart for the given data
@@ -206,7 +207,7 @@ export function removeSVG() {
     const svgSelection = d3.select("svg");
     if (!svgSelection.empty()) {
       // Remove the SVG element
-      console.log("remove svg in bringUpMeasurementsOverlay ");
+      debugLog("remove svg in bringUpMeasurementsOverlay ");
       svgSelection.remove();
     }
   }

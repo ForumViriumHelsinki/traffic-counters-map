@@ -36,32 +36,21 @@ import {
   setupCounterIdForm,
 } from "./counter-id-input";
 import { saveGeoJsonData } from "./event-listeners";
-
-let geojsonData; // Define the variable to store geojson data
+import { debugLog } from "./utils";
 
 const mapCenter = [60.18, 24.93]; // Helsinki coordinates
-
-document.addEventListener("DOMContentLoaded", function () {
-  setupCheckboxListeners();
-  setupCounterIdForm();
-  setUpVizCollapsibleBtnListeners();
-  setUpDefaultTimeWindow();
-  setUpTimeInputListeners();
-  setCloseContainerBtnListener();
-});
+const zoomLevel = 12; // Zoom level for the map
 
 async function displaySelectedCounterInfo(feature) {
   clearError();
   let infoText = getCounterInfoText(feature);
   displayCounterInfo("<p>" + infoText + "</p>");
   try {
-    console.log("fetching time frames");
+    debugLog("fetching time frames");
     const data = await fetchTimeframeData(getCounterId(feature));
-    console.log(data);
+    debugLog(data);
     if (data.firstTimeStamp || data.lastTimeStamp) {
-      console.log(
-        "timeframes: " + data.firstTimeStamp + "-" + data.lastTimeStamp,
-      );
+      debugLog("timeframes: " + data.firstTimeStamp + "-" + data.lastTimeStamp);
       let timeframeText =
         "   , Data received from " +
         data.firstTimeStamp.substring(0, 10) +
@@ -80,7 +69,7 @@ async function displaySelectedCounterInfo(feature) {
 }
 
 export function bringUpVisualisation(feature) {
-  console.log("bringUpVisualisation");
+  debugLog("bringUpVisualisation");
 
   const selectedTimeWindow = getSelectedTimeWindow();
 
@@ -103,7 +92,7 @@ export function bringUpVisualisation(feature) {
 
   const isTimeWindowWithinDefault =
     customEndDate < tomorrow && customStartDate >= aMonthAgo;
-  console.log("isTimeWindowWithinDefault" + isTimeWindowWithinDefault);
+  debugLog("isTimeWindowWithinDefault" + isTimeWindowWithinDefault);
 
   urlWithParams = fetchGetObservationsUrl(
     getCounterId(feature),
@@ -113,7 +102,7 @@ export function bringUpVisualisation(feature) {
 
   fetchCsvObservations(urlWithParams)
     .then(function (data) {
-      console.log("csv read  - Number of rows:", data.length);
+      debugLog("csv read  - Number of rows:", data.length);
 
       filterAndPlotDataUptoNow(data, 0, 1, "viz-hour", "past hour");
       filterAndPlotDataUptoNow(data, 1, 0, "viz-day", "today");
@@ -133,17 +122,17 @@ export function bringUpVisualisation(feature) {
       }
     })
     .catch((error) => {
-      console.log(error);
+      debugLog(error);
       console.error("Error loading CSV file:", error);
       displayError("Error fetching observations");
       hideLoadingSpinner();
     });
 
   if (isTimeWindowWithinDefault === false) {
-    console.log(" custom outside default ");
+    debugLog(" custom outside default ");
     //since api is not inclusive of end date
     const newEndDate = new Date(customEndDate + 1);
-    console.log(newEndDate);
+    debugLog(newEndDate);
     urlWithParams = fetchGetObservationsUrl(
       getCounterId(feature),
       customStartDate,
@@ -178,10 +167,20 @@ export function getGeojsonData() {
   }
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  setupCheckboxListeners();
+  setupCounterIdForm();
+  setUpVizCollapsibleBtnListeners();
+  setUpDefaultTimeWindow();
+  setUpTimeInputListeners();
+  setCloseContainerBtnListener();
+});
+
 // Call the function to create the map
-createMap(mapCenter, 12);
+createMap(mapCenter, zoomLevel);
 showLoadingSpinner();
 try {
+  //fetches and saves counters data to load onto map
   saveGeoJsonData(await fetchCountersData());
 } catch (error) {
   console.error(error);
