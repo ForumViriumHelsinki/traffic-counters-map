@@ -67,9 +67,11 @@ async function displaySelectedCounterInfo(feature) {
         data.firstTimeStamp.substring(0, 10) +
         " to " +
         data.lastTimeStamp.substring(0, 10);
-      displayCounterInfo("<p>" + infoText + timeframeText + "</p>");
-    } else {
-      displayError("data collection timeline not available");
+      displayCounterInfo("<p>" + infoText + ", " + timeframeText + "</p>");
+    } else if (data.message === "no data collected") {
+      displayCounterInfo("<p>" + infoText + ", " + data.message + "</p>");
+    } else if (data.message === "error") {
+      displayError("error fetching timeframe data");
     }
   } catch (error) {
     console.error(error);
