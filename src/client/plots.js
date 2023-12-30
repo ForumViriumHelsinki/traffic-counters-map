@@ -1,163 +1,195 @@
 import * as d3 from "d3";
 
-export function plotMultiLineChart(data, divId) {
-  const containerId = "#" + divId;
 
-  console.log("plotMultiLineChart", containerId);
+/**
+ * plots multi line chart for the given data
+ * filters data based on type of measurement (speed/count) and direction
+ * plots line for each direction and each type of measurement
+ * generates legends for each type of measurement and direction
+ * @param {*} data
+ * @param {*} divId
+ */
+function plotMultiLineChart(data, divId) {
+  const containerId = "#" + divId;
+  const containerWidth = 460;
+  const containerHeight = 350;
+  // Set the dimensions and margins of the graph
+  var margin = { top: 5, right: 10, bottom: 10, left: 20 };
+  var width = containerWidth - margin.left - margin.right;
+  var height = containerHeight - margin.top - margin.bottom;
+
+  // Append the SVG object to the body of the page
+  var svg = d3
+    .select(containerId)
+    .append("svg")
+    .attr("width", containerWidth)
+    .attr("height", containerHeight)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Define scales and axes
+  const xScale = d3.scaleTime().range([0, width]);
+  const yScale = d3.scaleLinear().range([height, 0]);
+
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
+
+  // Set domains for scales based on the whole data
+  xScale.domain(d3.extent(data, (d) => d.date));
+  yScale.domain([0, d3.max(data, (d) => Math.max(+d.value))]);
+
+  // Define a line generator
+  const line = d3
+    .line()
+    .x((d) => xScale(d.date))
+    .y((d) => yScale(+d.value));
+
 
   if (data.length !== 0) {
     const allDirections = data.map((d) => d.direction);
     const directions = [...new Set(allDirections)];
-
-    // Create a color scale based on the number of lines
-    const lineColorScale = d3
-      .scaleOrdinal()
-      .domain(directions)
-      .range(["blue", "green"]);
-
-    // Create a color scale based on the number of lines
-    const scatterColorScale = d3
-      .scaleOrdinal()
-      .domain(directions)
-      .range(["red", "orange"]);
 
     let speedData = [];
     let countData = [];
 
     // Iterate through unique directions using forEach
     directions.forEach((direction, index) => {
-      console.log("Processing direction:", direction);
-
-      // Filter data for speed and count based on direction
+      // Filter speed data for the current direction
       let filteredSpeed = data.filter(
         (item) =>
           item.typeOfMeasurement === "speed" && item.direction === direction,
       );
-      let filteredCount = data.filter(
-        (item) =>
-          item.typeOfMeasurement === "count" && item.direction === direction,
+
+      //plot speed line for the current direction
+      plotLine(
+        svg,
+        line,
+        filteredSpeed,
+        direction,
+        "speed",
+        getSpeedColorScale(directions),
       );
 
-      // Push filtered data into arrays
       speedData.push({
         direction: direction,
         data: filteredSpeed,
       });
 
+      // Filter count data for the current direction
+      let filteredCount = data.filter(
+        (item) =>
+          item.typeOfMeasurement === "count" && item.direction === direction,
+      );
+
+      //plot count line for the current direction
+      plotLine(
+        svg,
+        line,
+        filteredCount,
+        direction,
+        "count",
+        getCountColorScale(directions),
+      );
+
+
+
+
       countData.push({
         direction: direction,
         data: filteredCount,
       });
+
     });
-
-    const containerWidth = 460
-    const containerHeight = 350
-    // Set the dimensions and margins of the graph
-    var margin = { top: 5, right: 10, bottom: 10, left: 20 }
-    var width = containerWidth - margin.left - margin.right
-    var  height = containerHeight - margin.top - margin.bottom;
-
-    // Append the SVG object to the body of the page
-    var svg = d3
-      .select(containerId)
-      .append("svg")
-      .attr("width", containerWidth)
-      .attr("height", containerHeight)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Define scales and axes
-    const xScale = d3.scaleTime().range([0, width]);
-    const yScale = d3.scaleLinear().range([height, 0]);
-
-    const xAxis = d3.axisBottom(xScale);
-    const yAxis = d3.axisLeft(yScale);
-
-    // Set domains for scales based on data
-    xScale.domain(d3.extent(data, (d) => d.date));
-    yScale.domain([0, d3.max(data, (d) => Math.max(+d.value))]);
-
-    // Add lines to the chart
-
-    countData.forEach((lineData, index) => {
-      const line = d3
-        .line()
-        .x((d) => xScale(d.date))
-        .y((d) => yScale(+d.value));
-
-      let class_name = "line count-line " + lineData.direction;
-
-      svg
-        .append("path")
-        .data([lineData.data])
-        .attr("class", "line count-line")
-        .attr("d", line)
-        .attr("fill", "none")
-        .style("stroke", lineColorScale(lineData.direction));
-    });
-
-
-    speedData.forEach((scatterData, index) => {
-
-      const line = d3
-        .line()
-        .x((d) => xScale(d.date))
-        .y((d) => yScale(+d.value));
-
-      let class_name = "line speed-line " + scatterData.direction;
-
-      svg
-        .append("path")
-        .data([scatterData.data])
-        .attr("class", class_name)
-        .attr("d", line)
-        .attr("fill", "none")
-        .style("stroke", scatterColorScale(scatterData.direction));
-    });
-
 
     // Add X and Y axes
     svg.append("g").attr("class", "x-axis").call(xAxis.ticks(8));
     svg.append("g").attr("class", "y-axis").call(yAxis);
 
-    // Create a legend container
-    var legendContainer = d3
-      .select(containerId)
-      .append("div")
-      .attr("class", "legend-container");
-
-      updateLegend(legendContainer, countData, lineColorScale, "count")
-      updateLegend(legendContainer, speedData, scatterColorScale, "speed")
+    const legendContainer = d3.select(containerId).append("div").attr("class", "legend-container");
 
 
+
+    updateLegend(legendContainer, countData, getCountColorScale(directions), "count");
+    updateLegend(legendContainer, speedData, getSpeedColorScale(directions), "speed");
   }
 }
 
-// function plotLine(svg, data,direction, text )
 
+/**
+ * plots line based on the given line generater, data, direction, text and color scale
+ * @param {*} svg
+ * @param {*} line
+ * @param {*} data
+ * @param {*} direction
+ * @param {*} text
+ * @param {*} colorScale
+ */
+function plotLine(svg, line, data, direction, text, colorScale) {
+  let class_name = "line line-" + text + "-" + direction;
 
+  svg
+    .append("path")
+    .data([data])
+    .attr("class", class_name)
+    .attr("d", line)
+    .attr("fill", "none")
+    .style("stroke", colorScale(direction));
+}
+
+/**
+ * generates legends for data
+ * @param {*} legendContainer
+ * @param {*} data
+ * @param {*} colorScale - predefined color scale for the data
+ * @param {*} text - indicating count or speed ie context of the legend
+ */
 function updateLegend(legendContainer, data, colorScale, text) {
+  let legendClass = text + "-legend";
+  // Update legends for count data
+  const countLegends = legendContainer
+    .selectAll("." + legendClass)
+    .data(data)
+    .enter()
+    .append("div")
+    .attr("class", "legend-item " + legendClass);
 
+  countLegends
+    .append("div")
+    .attr("class", "legend-color")
+    .style("background-color", (d) => colorScale(d.direction));
 
-    let legendClass = text + "-legend"
-    // Update legends for count data
-    const countLegends = legendContainer
-        .selectAll('.'+legendClass)
-        .data(data)
-        .enter()
-        .append("div")
-        .attr("class", "legend-item "+legendClass);
+  countLegends
+    .append("div")
+    .attr("class", "legend-text")
+    .text((d) => d.direction + " " + text);
+}
 
-    countLegends
-        .append("div")
-        .attr("class", "legend-color")
-        .style("background-color", (d) => colorScale(d.direction));
+/**
+ *
+ * @returns color scale for count data
+ */
+function getCountColorScale(directions) {
+  // Create a color scale based on the number of directions
+  const colorScale = d3
+    .scaleOrdinal()
+    .domain(directions)
+    .range(["blue", "green"]);
 
-    countLegends
-        .append("div")
-        .attr("class", "legend-text")
-        .text((d) => d.direction + " " + text);
+  return colorScale;
+}
 
+/**
+ *
+ * @returns color scale for speed data
+ */
+function getSpeedColorScale(directions) {
+  // Create a color scale based on the number of directions
+  const colorScale = d3
+    .scaleOrdinal()
+    .domain(directions)
+    .range(["red", "orange"]);
+
+  return colorScale;
 }
 
 /**
