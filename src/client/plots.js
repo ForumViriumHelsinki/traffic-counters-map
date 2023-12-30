@@ -50,17 +50,19 @@ export function plotMultiLineChart(data, divId) {
       });
     });
 
+    const containerWidth = 460
+    const containerHeight = 350
     // Set the dimensions and margins of the graph
-    var margin = { top: 5, right: 10, bottom: 10, left: 25 },
-      width = 460 - margin.left - margin.right,
-      height = 350 - margin.top - margin.bottom;
+    var margin = { top: 5, right: 10, bottom: 10, left: 20 }
+    var width = containerWidth - margin.left - margin.right
+    var  height = containerHeight - margin.top - margin.bottom;
 
     // Append the SVG object to the body of the page
     var svg = d3
       .select(containerId)
       .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", containerWidth)
+      .attr("height", containerHeight)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -94,16 +96,8 @@ export function plotMultiLineChart(data, divId) {
         .style("stroke", lineColorScale(lineData.direction));
     });
 
-    // Add scatter points for speed data
+
     speedData.forEach((scatterData, index) => {
-      // svg.selectAll(".dot")  // Use a class selector for the dots
-      //     .data(scatterData.data)
-      //     .enter().append("circle")
-      //     .attr("class", "dot")
-      //     .attr("r", 1)  // Set the radius of the dots
-      //     .attr("cx", d => xScale(d.date))
-      //     .attr("cy", d => yScale(+d.value))
-      //     .style('fill', scatterColorScale(scatterData.direction));
 
       const line = d3
         .line()
@@ -121,9 +115,9 @@ export function plotMultiLineChart(data, divId) {
         .style("stroke", scatterColorScale(scatterData.direction));
     });
 
+
     // Add X and Y axes
     svg.append("g").attr("class", "x-axis").call(xAxis.ticks(8));
-
     svg.append("g").attr("class", "y-axis").call(yAxis);
 
     // Create a legend container
@@ -132,47 +126,39 @@ export function plotMultiLineChart(data, divId) {
       .append("div")
       .attr("class", "legend-container");
 
-    // Update legends for count data
-    const countLegends = legendContainer
-      .selectAll(".count-legend")
-      .data(countData)
-      .enter()
-      .append("div")
-      .attr("class", "legend-item count-legend");
+      updateLegend(legendContainer, countData, lineColorScale, "count")
+      updateLegend(legendContainer, speedData, scatterColorScale, "speed")
 
-    countLegends
-      .append("div")
-      .attr("class", "legend-color")
-      .style("background-color", (d) => lineColorScale(d.direction));
 
-    countLegends
-      .append("div")
-      .attr("class", "legend-text")
-      .text((d) => d.direction + " count");
-
-    // Update legends for speed data
-    const speedLegends = legendContainer
-      .selectAll(".speed-legend")
-      .data(speedData)
-      .enter()
-      .append("div")
-      .attr("class", "legend-item speed-legend");
-
-    speedLegends
-      .append("div")
-      .attr("class", "legend-color")
-      .style("background-color", (d) => scatterColorScale(d.direction));
-
-    speedLegends
-      .append("div")
-      .attr("class", "legend-text")
-      .text((d) => d.direction + " speed");
   }
 }
 
-// function updateLegend(containerId, data, colorScale) {
+// function plotLine(svg, data,direction, text )
 
-// }
+
+function updateLegend(legendContainer, data, colorScale, text) {
+
+
+    let legendClass = text + "-legend"
+    // Update legends for count data
+    const countLegends = legendContainer
+        .selectAll('.'+legendClass)
+        .data(data)
+        .enter()
+        .append("div")
+        .attr("class", "legend-item "+legendClass);
+
+    countLegends
+        .append("div")
+        .attr("class", "legend-color")
+        .style("background-color", (d) => colorScale(d.direction));
+
+    countLegends
+        .append("div")
+        .attr("class", "legend-text")
+        .text((d) => d.direction + " " + text);
+
+}
 
 /**
  * function used to remove SVG elements from the DOM before appending new ones for new visualizations
