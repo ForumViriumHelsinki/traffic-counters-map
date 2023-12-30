@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 
-
 /**
  * plots multi line chart for the given data
  * filters data based on type of measurement (speed/count) and direction
@@ -43,7 +42,6 @@ function plotMultiLineChart(data, divId) {
     .line()
     .x((d) => xScale(d.date))
     .y((d) => yScale(+d.value));
-
 
   if (data.length !== 0) {
     const allDirections = data.map((d) => d.direction);
@@ -91,29 +89,35 @@ function plotMultiLineChart(data, divId) {
         getCountColorScale(directions),
       );
 
-
-
-
       countData.push({
         direction: direction,
         data: filteredCount,
       });
-
     });
 
     // Add X and Y axes
     svg.append("g").attr("class", "x-axis").call(xAxis.ticks(8));
     svg.append("g").attr("class", "y-axis").call(yAxis);
 
-    const legendContainer = d3.select(containerId).append("div").attr("class", "legend-container");
+    const legendContainer = d3
+      .select(containerId)
+      .append("div")
+      .attr("class", "legend-container");
 
-
-
-    updateLegend(legendContainer, countData, getCountColorScale(directions), "count");
-    updateLegend(legendContainer, speedData, getSpeedColorScale(directions), "speed");
+    updateLegend(
+      legendContainer,
+      countData,
+      getCountColorScale(directions),
+      "count",
+    );
+    updateLegend(
+      legendContainer,
+      speedData,
+      getSpeedColorScale(directions),
+      "speed",
+    );
   }
 }
-
 
 /**
  * plots line based on the given line generater, data, direction, text and color scale
