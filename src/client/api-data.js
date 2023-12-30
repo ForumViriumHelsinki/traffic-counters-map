@@ -4,6 +4,7 @@
  */
 
 import * as d3 from "d3";
+import { debugLog } from "./utils";
 
 const counterUrl = "/api/counters";
 const observationsUrl = "/api/observations/";
@@ -51,8 +52,8 @@ export async function fetchCountersData() {
       item.properties.show_on_map = true;
       return item;
     });
-    console.log("fetched counters data");
-    // console.log(geojson);
+    debugLog("fetched counters data");
+    // debugLog(geojson);
     return geojson;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -66,7 +67,7 @@ export async function fetchCountersData() {
  * @returns {string} formatted date in YYYY-MM-DD format
  */
 export function formatDate(date) {
-  console.log(date);
+  debugLog(date);
   if (!(date instanceof Date)) {
     // If 'date' is not a Date object, try to parse it
     date = new Date(date);
@@ -96,16 +97,16 @@ export function formatDate(date) {
  * @returns {string} url for fetching observations data from counterId between the specified dates
  */
 export function fetchGetObservationsUrl(counterId, startDate, endDate) {
-  // console.log("fetchGetObservationsUrl")
-  // console.log("startDate " + startDate)
-  // console.log("endDate " + endDate)
+  // debugLog("fetchGetObservationsUrl")
+  // debugLog("startDate " + startDate)
+  // debugLog("endDate " + endDate)
 
   let apiUrl = observationsUrl + counterId;
   const formattedStartDate = formatDate(startDate);
-  console.log(formattedStartDate);
+  debugLog(formattedStartDate);
 
   const formattedEndDate = formatDate(endDate);
-  console.log(formattedEndDate);
+  debugLog(formattedEndDate);
 
   const queryParams = {
     startDate: formattedStartDate,
@@ -116,7 +117,7 @@ export function fetchGetObservationsUrl(counterId, startDate, endDate) {
     .join("&");
   let urlWithParams = `${apiUrl}?${queryString}`;
 
-  // console.log(urlWithParams)
+  // debugLog(urlWithParams)
 
   return urlWithParams;
 }
@@ -128,7 +129,7 @@ export function fetchGetObservationsUrl(counterId, startDate, endDate) {
  */
 export async function fetchTimeframeData(counterId) {
   try {
-    console.log("fetching timeframe data");
+    debugLog("fetching timeframe data");
     const response = await fetch(observationsTimeframeUrl + counterId);
     const timeframeData = await response.json();
 

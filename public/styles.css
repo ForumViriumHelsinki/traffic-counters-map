@@ -1,174 +1,173 @@
 body,
 html {
-    height: 100%;
-    margin: 0;
+  height: 100%;
+  margin: 0;
 }
 
 .container {
-    display: flex;
-    height: 100vh;
-    /* 100% of the viewport height */
-
+  display: flex;
+  height: 100vh;
+  /* 100% of the viewport height */
 }
 
 .lmap {
-    flex: 1;
-    /* Each div takes up half of the container */
-    height: 100%;
-    z-index: 1
+  flex: 1;
+  /* Each div takes up half of the container */
+  height: 100%;
+  z-index: 1;
 }
 
 .visualization {
-    flex: 1;
-    /* Each div takes up half of the container */
-    height: 50%;
-    z-index: 1
+  flex: 1;
+  /* Each div takes up half of the container */
+  height: 50%;
+  z-index: 1;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 #overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    /* Semi-transparent black background */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    z-index: 3;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  /* Semi-transparent black background */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  z-index: 3;
 }
 
 #headerOverlay {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 94%;
-    background: rgba(170, 159, 159, 0.7);
-    /* Semi-transparent black background */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: rgb(18, 12, 12);
-    margin-left: 3%;
-    z-index: 2;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 94%;
+  background: rgba(170, 159, 159, 0.7);
+  /* Semi-transparent black background */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: rgb(18, 12, 12);
+  margin-left: 3%;
+  z-index: 2;
 }
 
 #vizOverlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 40%;
-    background: rgba(233, 221, 221, 0.7);
-    /* Semi-transparent black background */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: rgb(17, 16, 16);
-    margin-left: 55%;
-    margin-top: 10%;
-    z-index: 2;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40%;
+  background: rgba(233, 221, 221, 0.7);
+  /* Semi-transparent black background */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: rgb(17, 16, 16);
+  margin-left: 55%;
+  margin-top: 10%;
+  z-index: 2;
 }
 
-#errorDiv{
-    background: rgba(238, 226, 226, 0.7);
-    color: red;
-    font-size: 14px;
+#errorDiv {
+  background: rgba(238, 226, 226, 0.7);
+  color: red;
+  font-size: 14px;
 }
 
-#counterInfoDiv{
-    background: rgba(252, 250, 250, 0.928);
-    color: blue;
-    font-size: 14px;
+#counterInfoDiv {
+  background: rgba(252, 250, 250, 0.928);
+  color: blue;
+  font-size: 14px;
 }
 
 .loading-container {
-    display: none;
-    flex-grow: 1;
-    justify-content: center;
-    align-items: center;
-    z-index: 2;
+  display: none;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
 }
 
 .loading-spinner {
-    border: 4px solid rgba(72, 237, 12, 0.3);
-    /* Light border color */
-    border-radius: 50%;
-    border-top: 4px solid #ffffff;
-    /* White top border */
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    /* Spin animation */
-    margin-bottom: 10px;
-    z-index: 3;
+  border: 4px solid rgba(72, 237, 12, 0.3);
+  /* Light border color */
+  border-radius: 50%;
+  border-top: 4px solid #ffffff;
+  /* White top border */
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  /* Spin animation */
+  margin-bottom: 10px;
+  z-index: 3;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
 
-    100% {
-        transform: rotate(360deg);
-    }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Style for legend container */
 .legend-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 
 /* Style for legend items */
 .legend-item {
-    display: flex;
-    align-items: center;
-    margin-right: 10px;
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
 }
 
 /* Style for legend color */
 .legend-color {
-    width: 20px;
-    height: 10px;
-    margin-right: 5px;
+  width: 20px;
+  height: 10px;
+  margin-right: 5px;
 }
 
 /* Style for legend text */
 .legend-text {
-    font-size: 14px;
-    color: #333;
-    /* Adjust text color as needed */
+  font-size: 14px;
+  color: #333;
+  /* Adjust text color as needed */
 }
 
 .label-style {
-    color: #150909;
+  color: #150909;
 }
 
 .numericInput {
-    width: 100px; /* Set the width as needed */
-    height: 30px; /* Set the height as needed */
-    /* You can add other styling properties as needed */
+  width: 100px; /* Set the width as needed */
+  height: 30px; /* Set the height as needed */
+  /* You can add other styling properties as needed */
 }
 
 .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #555;
-  }
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+}
 
-  .close-button:hover {
-    color: #000;
-  }
+.close-button:hover {
+  color: #000;
+}

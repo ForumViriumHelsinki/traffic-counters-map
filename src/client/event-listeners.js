@@ -12,6 +12,7 @@ import { uncheckAllCheckboxes } from "./checkboxes";
 import { showVisualisationCards } from "./viz-popup";
 import { setCounterIdToInputField } from "./counter-id-input";
 import { bringUpVisualisation } from "./main";
+import { debugLog } from "./utils";
 
 let geojsonData; // Define the variable to store geojson data
 
@@ -39,7 +40,7 @@ export function addCounterIdGoBtnEventListener(counterId) {
   showVisualisationCards(false);
   clearCounterInfo();
 
-  //console.log(geojsonData)
+  //debugLog(geojsonData)
   // Get the counter info from geojson data
   const counterInfo = geojsonData.features.filter(
     (feature) => getCounterId(feature) === counterId,
@@ -80,7 +81,7 @@ export function addCounterIdGoBtnEventListener(counterId) {
  */
 export function addCounterClickEventListeners(layer, feature, formId) {
   layer.on("click", function (event) {
-    console.log("onclick counter marker");
+    debugLog("onclick counter marker");
 
     showVisualisationCards(false);
     clearCounterInfo();
@@ -89,7 +90,7 @@ export function addCounterClickEventListeners(layer, feature, formId) {
     // Add a click event to the form
     form.addEventListener("submit", function (event) {
       event.preventDefault();
-      console.log("onsubmit");
+      debugLog("onsubmit");
 
       bringUpVisualisation(feature);
     });
@@ -102,15 +103,15 @@ export function addCounterClickEventListeners(layer, feature, formId) {
  */
 export function addMapClickEventListener(map) {
   map.on("click", function (e) {
-    console.log("map clicked");
+    debugLog("map clicked");
     showVisualisationCards(false);
     clearCounterInfo();
   });
 }
 
 export function saveGeoJsonData(data) {
-  console.log("saveGeoJsonData");
+  debugLog("saveGeoJsonData");
   geojsonData = data;
   loadGeojsonMap(geojsonData);
-  //console.log(geojsonData);
+  //debugLog(geojsonData);
 }
