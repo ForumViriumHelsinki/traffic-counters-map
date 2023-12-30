@@ -1,6 +1,6 @@
 /**
- * Module for updating geojson data.
- * @module geojson-modifier
+ * Module for reading and updating geojson data.
+ * @module geojson-handler
  */
 
 /**
@@ -21,7 +21,7 @@ export function updateGeojsonWithCheckboxSelection(geojsonData, checkbox) {
       source = "infotripla";
     }
     if (source === checkbox.id) {
-        item.properties.show_on_map = checkbox.checked
+      item.properties.show_on_map = checkbox.checked;
     }
     return item;
   });
@@ -46,4 +46,30 @@ export function updateGeojsonWithCounterIdSelection(geojsonData, counterId) {
     return item;
   });
   return geojsonData;
+}
+
+/**
+ * takes select properties from the feature and returns them as a string
+ * @param {GeoJSON} feature (counter)
+ * @returns {string} counter info as text
+ */
+export function getCounterInfoText(feature) {
+  const infoText =
+    "Selected Counter Info :  id:" +
+    feature.properties.id +
+    ", name:" +
+    feature.properties.name +
+    ", source:" +
+    feature.properties.source;
+
+  return infoText;
+}
+
+/**
+ * returns counter id from the feature
+ * @param {GeoJSON} feature
+ * @returns {string} counter id
+ */
+export function getCounterId(feature) {
+  return feature.properties.id;
 }

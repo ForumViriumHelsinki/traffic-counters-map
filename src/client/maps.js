@@ -7,7 +7,7 @@ import * as L from "leaflet";
 import {
   addCounterClickEventListeners,
   addMapClickEventListener,
-} from "./main";
+} from "./event-listeners.js";
 
 let map;
 let geojsonLayer;
@@ -41,11 +41,8 @@ export function panMap(geometry) {
  */
 export function ReloadGeojsonMap(geojsonData) {
   map.removeLayer(geojsonLayer);
-  loadGeojsonMap(geojsonData)
-
+  loadGeojsonMap(geojsonData);
 }
-
-
 
 /**
  * Adds the geojson data to the map. Each Point is a marker on the map. Popup is added to each marker with the counter data.

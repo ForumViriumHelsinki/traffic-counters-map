@@ -66,6 +66,17 @@ export async function fetchCountersData() {
  * @returns {string} formatted date in YYYY-MM-DD format
  */
 export function formatDate(date) {
+  console.log(date);
+  if (!(date instanceof Date)) {
+    // If 'date' is not a Date object, try to parse it
+    date = new Date(date);
+
+    // Check if the parsing was successful
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
+    }
+  }
+
   return date
     .toLocaleDateString("fi-FI", {
       day: "2-digit",
@@ -110,16 +121,20 @@ export function fetchGetObservationsUrl(counterId, startDate, endDate) {
   return urlWithParams;
 }
 
-
+/**
+ * retrieves information about the data collection time frame from the counter
+ * @param {string} counterId
+ * @returns start time and end time of data collection from said counter
+ */
 export async function fetchTimeframeData(counterId) {
-    try {
-        console.log("fetching timeframe data");
-        const response = await fetch(observationsTimeframeUrl + counterId);
-        const timeframeData = await response.json();
+  try {
+    console.log("fetching timeframe data");
+    const response = await fetch(observationsTimeframeUrl + counterId);
+    const timeframeData = await response.json();
 
-        return timeframeData;
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        throw error;
-    }
-    }
+    return timeframeData;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
