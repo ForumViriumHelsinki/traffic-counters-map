@@ -29,7 +29,7 @@ const observationsUrl = "https://lidotiku.api.dev.hel.ninja/api/observations";
 async function getFirstTimestampFromResponse(url, queryParams) {
   const queryString = new URLSearchParams(queryParams).toString();
   const urlWithQuery = `${url}?${queryString}`;
-  console.log("urlWithQuery " + urlWithQuery);
+  //console.log("urlWithQuery " + urlWithQuery);
   const response = await axios.get(urlWithQuery);
   if (response.status != 200) {
     return { message: "error" };
@@ -83,7 +83,7 @@ app.get("/api/counters", async (req, res) => {
   try {
     const queryParams = { format: "json" };
     const url = counterUrl;
-    console.log(url);
+    //console.log(url);
     const response = await axios.get(url);
     res.json(response.data);
   } catch (error) {
@@ -161,11 +161,11 @@ app.get("/api/observations/:id", async (req, res) => {
     const queryString = new URLSearchParams(queryParams).toString();
     const urlWithQuery = `${url}?${queryString}`;
     const response = await axios.get(urlWithQuery);
-    //res.json(response.data);
+    //TODO pagesize is now hardcoded to 1000 but if api allows different pagesizes, this can be changed to get more
     pagesize = 1000;
     if (response.data && response.data["count"] != 0) {
       totalPages = Math.ceil(response.data["count"] / pagesize);
-      console.log("total pages" + totalPages);
+      //console.log("total pages" + totalPages);
       queryParams["format"] = "csv";
       queryParams["pagesize"] = pagesize;
       data = await fetchPaginatedData(url, queryParams, totalPages);

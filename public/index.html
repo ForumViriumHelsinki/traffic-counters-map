@@ -1,128 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Map of Traffic Counters</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
+  <body>
     <!-- Loading spinner element -->
     <div id="overlay">
-        <div class="loading-spinner"></div>
-        <p>Loading...</p>
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
     </div>
     <div id="headerOverlay">
-        <div class="checkbox align-items-center">
-            <label class="checkbox-inline label-style"><input type="checkbox" class="filter-checkbox" id="ecocounter"
-                    checked>EcoCounter
-            </label>
-            <!-- <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
+      <div class="checkbox align-items-center">
+        <label class="checkbox-inline label-style"
+          ><input
+            type="checkbox"
+            class="filter-checkbox"
+            id="ecocounter"
+            checked
+          />EcoCounter
+        </label>
+        <!-- <label class="checkbox-inline"><input type="checkbox" class="filter-checkbox"
               id="fintraffic">FinTraffic
               </label> -->
-            <label class="checkbox-inline label-style"><input type="checkbox" class="filter-checkbox" id="hel lam"
-                    checked>HEL
-                LAM </label>
-            <label class="checkbox-inline label-style"><input type="checkbox" class="filter-checkbox" id="infotripla"
-                    checked>Info Tripla
-            </label>
-            <label class="checkbox-inline label-style"><input type="checkbox" class="filter-checkbox" id="marksman"
-                    checked>Marksman
-            </label>
-            <label class="checkbox-inline label-style"><input type="checkbox" class="filter-checkbox" id="liva"
-                    checked>Liva
-            </label>
+        <label class="checkbox-inline label-style"
+          ><input
+            type="checkbox"
+            class="filter-checkbox"
+            id="hel lam"
+            checked
+          />HEL LAM
+        </label>
+        <label class="checkbox-inline label-style"
+          ><input
+            type="checkbox"
+            class="filter-checkbox"
+            id="infotripla"
+            checked
+          />Info Tripla
+        </label>
+        <label class="checkbox-inline label-style"
+          ><input
+            type="checkbox"
+            class="filter-checkbox"
+            id="marksman"
+            checked
+          />Marksman
+        </label>
+        <label class="checkbox-inline label-style"
+          ><input
+            type="checkbox"
+            class="filter-checkbox"
+            id="liva"
+            checked
+          />Liva
+        </label>
 
-            <div class="align-items-center">
+        <div class="align-items-center">
+          <form id="counterIdForm">
+            <input
+              type="text"
+              id="numericInput"
+              placeholder="Enter a counter ID"
+              required
+            />
 
-
-                <form id="counterIdForm">
-
-
-
-                    <input type="text" id="numericInput" placeholder="Enter a counter ID" required>
-
-
-                    <label for="startDate">Start Date:</label>
-                    <input type="date" id="startDate" name="startDate" required>
-                    <label for="endDate">End Date:</label>
-                    <input type="date" id="endDate" name="endDate" required>
-                    <!-- <span id="dateError" style="color: red;"></span> -->
-                    <span class="error-message" id="errorMessage" style='color: red;'></span>
-                    <button type="submit" class="btn btn-primary">Go</button>
-
-                </form>
-                <p style="font-size: 9px;">Enter Counter ID or Select a counter from the map</p>
-                <div id="errorDiv"></div>
-                <div id="counterInfoDiv"></div>
-
-
-
-            </div>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required />
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required />
+            <!-- <span id="dateError" style="color: red;"></span> -->
+            <span
+              class="error-message"
+              id="errorMessage"
+              style="color: red"
+            ></span>
+            <button type="submit" class="btn btn-primary">Go</button>
+          </form>
+          <p style="font-size: 9px">
+            Enter Counter ID or Select a counter from the map
+          </p>
+          <div id="errorDiv"></div>
+          <div id="counterInfoDiv"></div>
         </div>
+      </div>
     </div>
 
-    <div id="map" class="lmap" style="height: 780px;"></div>
+    <div id="map" class="lmap" style="height: 780px"></div>
 
     <div id="vizOverlay">
+      <div id="allViz" class="align-items-center">
+        <a
+          class="btn btn-primary"
+          data-toggle="collapse"
+          href="#multiCollapseVizHour"
+          role="button"
+          id="vizHourBtn"
+          aria-expanded="false"
+          aria-controls="multiCollapseVizHour"
+          >Last Hour</a
+        >
+        <a
+          class="btn btn-primary"
+          data-toggle="collapse"
+          href="#multiCollapseVizDay"
+          role="button"
+          id="vizDayBtn"
+          aria-expanded="false"
+          aria-controls="multiCollapseVizDay"
+          >Day</a
+        >
+        <a
+          class="btn btn-primary"
+          data-toggle="collapse"
+          href="#multiCollapseVizWeek"
+          role="button"
+          id="vizWeekBtn"
+          aria-expanded="false"
+          aria-controls="multiCollapseVizWeek"
+        >
+          Week</a
+        >
+        <a
+          class="btn btn-primary"
+          data-toggle="collapse"
+          href="#multiCollapseVizMonth"
+          role="button"
+          id="vizMonthBtn"
+          aria-expanded="false"
+          aria-controls="multiCollapseVizMonth"
+          >Month</a
+        >
+        <a
+          class="btn btn-primary"
+          data-toggle="collapse"
+          href="#multiCollapseVizCustom"
+          role="button"
+          id="vizCustomBtn"
+          aria-expanded="true"
+          aria-controls="multiCollapseVizCustom"
+          >Selected Time Window</a
+        >
 
-        <div id="allViz" class="align-items-center">
-
-
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizHour" role="button" id="vizHourBtn"
-                aria-expanded="false" aria-controls="multiCollapseVizHour">Last Hour</a>
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizDay" role="button" id="vizDayBtn"
-                aria-expanded="false" aria-controls="multiCollapseVizDay">Day</a>
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizWeek" role="button" id="vizWeekBtn"
-                aria-expanded="false" aria-controls="multiCollapseVizWeek"> Week</a>
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizMonth" role="button" id="vizMonthBtn"
-                aria-expanded="false" aria-controls="multiCollapseVizMonth">Month</a>
-            <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseVizCustom" role="button" id="vizCustomBtn"
-                aria-expanded="true" aria-controls="multiCollapseVizCustom">Selected Time Window</a>
-
-
-
-
-            <div class="collapse multi-collapse" id="multiCollapseVizHour">
-
-                <div class="card card-body" id="viz-hour">
-
-                </div>
-            </div>
-
-
-            <div class="collapse multi-collapse" id="multiCollapseVizDay">
-                <div class="card card-body" id="viz-day">
-
-                </div>
-            </div>
-
-
-            <div class="collapse multi-collapse" id="multiCollapseVizWeek">
-                <div class="card card-body" id="viz-week">
-
-                </div>
-            </div>
-
-            <div class="collapse multi-collapse" id="multiCollapseVizMonth">
-                <div class="card card-body" id="viz-month">
-
-                </div>
-            </div>
-
-            <div class="collapse show multi-collapse " id="multiCollapseVizCustom">
-                <div class="card card-body" id="viz-custom">
-
-                </div>
-            </div>
-
+        <div class="collapse multi-collapse" id="multiCollapseVizHour">
+          <div class="card card-body" id="viz-hour"></div>
         </div>
-        <!-- Close (x) button -->
-        <span class="close-button" id="closeContainerBtn">×</span>
+
+        <div class="collapse multi-collapse" id="multiCollapseVizDay">
+          <div class="card card-body" id="viz-day"></div>
+        </div>
+
+        <div class="collapse multi-collapse" id="multiCollapseVizWeek">
+          <div class="card card-body" id="viz-week"></div>
+        </div>
+
+        <div class="collapse multi-collapse" id="multiCollapseVizMonth">
+          <div class="card card-body" id="viz-month"></div>
+        </div>
+
+        <div class="collapse show multi-collapse" id="multiCollapseVizCustom">
+          <div class="card card-body" id="viz-custom"></div>
+        </div>
+      </div>
+      <!-- Close (x) button -->
+      <span class="close-button" id="closeContainerBtn">×</span>
     </div>
 
     <!-- </div> -->
@@ -132,6 +184,5 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-
+  </body>
 </html>
