@@ -9,7 +9,7 @@ const path = require("path");
 const webpackConfig = require("../webpack.config");
 
 const app = express();
-const port = 3001;
+const port = 8080;
 const host = "0.0.0.0";
 
 app.use(express.static("public"));

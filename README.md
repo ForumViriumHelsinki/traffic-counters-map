@@ -1,13 +1,14 @@
-App to visualize traffic counters data available at exp.fvh.io:3001
+# Traffic Counters Map
 
-Data available from public api : https://lidotiku.api.dev.hel.ninja/api/?format=api
-Swagger doc : https://lidotiku.api.dev.hel.ninja/swagger with schema: https://lidotiku.api.dev.hel.ninja/openapi-schema.json
+## Summary
 
-Plots the available counters. Clicking on a counter marker brings up a popup with counter information. There is a button on the popup to show observations from the counter as well. This will open various visualisations
+App to visualize traffic counters data using the [LIDO-TIKU
+API](https://github.com/City-of-Helsinki/lidotiku).
 
-```
-npm run build
-node src/server.js
-```
+- [LIDO-TIKU API URL](https://lidotiku.api.dev.hel.ninja/api/?format=api)
+- [LIDO-TIKU OpenAPI schema](https://lidotiku.api.dev.hel.ninja/openapi-schema.json)
 
-and go to http://localhost:3001
+Plots the available counters. Clicking on a counter marker brings up a popup
+with counter information. There is a button on the popup to show observations
+from the counter as well. This will open another tab with observation data api
+call
