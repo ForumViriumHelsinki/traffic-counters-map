@@ -59,9 +59,16 @@ async function fetchPaginatedData(url, queryParams, totalPages) {
     queryParams["page"] = page;
     const queryString = new URLSearchParams(queryParams).toString();
     const urlWithQuery = `${url}?${queryString}`;
-    //console.log("urlWithQuery " + urlWithQuery)
-    const response = await fetch(urlWithQuery);
-    const csvData = await response.text();
+    // console.log("urlWithQuery " + urlWithQuery)
+    const response = await axios.get(urlWithQuery, {
+      responseType: 'text' // to handle the text response
+    });
+    const csvData = response.data;
+
+    // Log request headers
+    // console.log(response.config.headers);
+    // Log response headers
+    // console.log(response.headers);
 
     // Remove header row for pages other than the first one
     const rows = csvData.split("\n");
@@ -149,6 +156,7 @@ app.get("/api/observations/timeframe/:id", async (req, res) => {
  * route to get observations data from an api
  */
 app.get("/api/observations/:id", async (req, res) => {
+  let totalPages;
   try {
     // format: 'json'
     const queryParams = { order: "-datetime", counter: req.params.id };
@@ -161,13 +169,13 @@ app.get("/api/observations/:id", async (req, res) => {
     const queryString = new URLSearchParams(queryParams).toString();
     const urlWithQuery = `${url}?${queryString}`;
     const response = await axios.get(urlWithQuery);
-    //TODO pagesize is now hardcoded to 1000 but if api allows different pagesizes, this can be changed to get more
-    pagesize = 1000;
-    if (response.data && response.data["count"] != 0) {
+    // Max pagesize is currently 10000 on API side
+    pagesize = 10000;
+    if (response.data && response.data["count"] !== 0) {
       totalPages = Math.ceil(response.data["count"] / pagesize);
       //console.log("total pages" + totalPages);
       queryParams["format"] = "csv";
-      queryParams["pagesize"] = pagesize;
+      queryParams["page_size"] = pagesize;
       data = await fetchPaginatedData(url, queryParams, totalPages);
       //console.log(data)
 
